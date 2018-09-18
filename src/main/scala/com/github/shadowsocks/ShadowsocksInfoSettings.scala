@@ -20,7 +20,7 @@ import com.github.shadowsocks.database.Profile
 import com.github.shadowsocks.preferences.{DropDownPreference, NumberPickerPreference, PasswordEditTextPreference, SummaryEditTextPreference}
 import com.github.shadowsocks.utils.CloseUtils._
 import com.github.shadowsocks.utils._
-
+import com.github.shadowsocks.flyrouter.R
 
 object ShadowsocksInfoSettings {
   // Constants
@@ -89,10 +89,15 @@ class ShadowsocksInfoSettings extends PreferenceFragment with OnSharedPreference
     getPreferenceManager.getSharedPreferences.registerOnSharedPreferenceChangeListener(this)
     setProfile(app.currentProfile match {
       case Some(profile) => profile
-      case None => app.switchProfile((app.profileManager.getFirstProfile match {
-        case Some(first) => first
-        case None => app.profileManager.createDefault()
-      }).id)
+      case None =>
+        var p:Profile =app.profileManager.getFirstProfile match {
+          case Some(first) => first
+          case None => null
+        }
+        if(p!=null){
+          app.switchProfile(p.id)
+        }
+        p
     })
 
     findPreference(Key.group_name).setOnPreferenceChangeListener((_, value) => {
@@ -462,14 +467,13 @@ class ShadowsocksInfoSettings extends PreferenceFragment with OnSharedPreference
           case Some(p) =>
             app.profileId(p.id)
             p
-          case None =>
-            val default = app.profileManager.createDefault()
-            app.profileId(default.id)
-            default
+          case None => null
+
         }
     }
-
-    isProxyApps.setChecked(profile.proxyApps)
+    if(profile!=null){
+      isProxyApps.setChecked(profile.proxyApps)
+    }
   }
 
   override def onDestroy {

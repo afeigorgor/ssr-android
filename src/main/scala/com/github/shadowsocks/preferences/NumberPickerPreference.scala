@@ -7,7 +7,7 @@ import android.preference.DialogPreference
 import android.util.AttributeSet
 import android.view.{ViewGroup, WindowManager}
 import android.widget.NumberPicker
-import com.github.shadowsocks.R
+import com.github.shadowsocks.flyrouter.R
 
 /**
   * @author Mygod

@@ -25,6 +25,8 @@ import android.util.Log
 import okhttp3.{Call, OkHttpClient, Request, Response}
 import org.json.JSONObject
 import top.bitleo.http.{NetUtils, SystemUtil, ToolUtils}
+import com.github.shadowsocks.flyrouter.R
+import com.github.shadowsocks.flyrouter.BuildConfig
 
 object ShadowsocksSettings {
   // Constants
@@ -59,24 +61,34 @@ object ShadowsocksSettings {
   }
 
   def updatePreference(pref: Preference, name: String, profile: Profile) {
-    name match {
-      case Key.group_name => updateSummaryEditTextPreference(pref, profile.url_group)
-      case Key.name => updateSummaryEditTextPreference(pref, profile.name)
-      case Key.remotePort => updateNumberPickerPreference(pref, profile.remotePort)
-      case Key.localPort => updateNumberPickerPreference(pref, profile.localPort)
-      case Key.password => updatePasswordEditTextPreference(pref, profile.password)
-      case Key.method => updateDropDownPreference(pref, profile.method)
-      case Key.protocol => updateDropDownPreference(pref, profile.protocol)
-      case Key.protocol_param => updateSummaryEditTextPreference(pref, profile.protocol_param)
-      case Key.obfs => updateDropDownPreference(pref, profile.obfs)
-      case Key.obfs_param => updateSummaryEditTextPreference(pref, profile.obfs_param)
-      case Key.route => updateDropDownPreference(pref, profile.route)
-      case Key.proxyApps => updateSwitchPreference(pref, profile.proxyApps)
-      case Key.udpdns => updateSwitchPreference(pref, profile.udpdns)
-      case Key.dns => updateSummaryEditTextPreference(pref, profile.dns)
-      case Key.china_dns => updateSummaryEditTextPreference(pref, profile.china_dns)
-      case Key.ipv6 => updateSwitchPreference(pref, profile.ipv6)
-      case _ => {}
+    if(profile==null){
+      name match {
+        case Key.group_name => updateSummaryEditTextPreference(pref, "")
+        case Key.name => updateSummaryEditTextPreference(pref, "")
+        case Key.route => updateDropDownPreference(pref, "bypass-lan")
+        case _ => {}
+      }
+    }else{
+
+      name match {
+        case Key.group_name => updateSummaryEditTextPreference(pref, profile.url_group)
+        case Key.name => updateSummaryEditTextPreference(pref, profile.name)
+        case Key.remotePort => updateNumberPickerPreference(pref, profile.remotePort)
+        case Key.localPort => updateNumberPickerPreference(pref, profile.localPort)
+        case Key.password => updatePasswordEditTextPreference(pref, profile.password)
+        case Key.method => updateDropDownPreference(pref, profile.method)
+        case Key.protocol => updateDropDownPreference(pref, profile.protocol)
+        case Key.protocol_param => updateSummaryEditTextPreference(pref, profile.protocol_param)
+        case Key.obfs => updateDropDownPreference(pref, profile.obfs)
+        case Key.obfs_param => updateSummaryEditTextPreference(pref, profile.obfs_param)
+        case Key.route => updateDropDownPreference(pref, profile.route)
+        case Key.proxyApps => updateSwitchPreference(pref, profile.proxyApps)
+        case Key.udpdns => updateSwitchPreference(pref, profile.udpdns)
+        case Key.dns => updateSummaryEditTextPreference(pref, profile.dns)
+        case Key.china_dns => updateSummaryEditTextPreference(pref, profile.china_dns)
+        case Key.ipv6 => updateSwitchPreference(pref, profile.ipv6)
+        case _ => {}
+      }
     }
   }
 }
@@ -236,65 +248,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
 
       true
     })
-//
-//    isProxyApps = findPreference(Key.proxyApps).asInstanceOf[SwitchPreference]
-//    isProxyApps.setOnPreferenceClickListener(_ => {
-//      startActivity(new Intent(activity, classOf[AppManager]))
-//      isProxyApps.setChecked(true)
-//      false
-//    })
-//    isProxyApps.setOnPreferenceChangeListener((_, value) => {
-//      app.profileManager.updateAllProfile_Boolean("proxyApps", value.asInstanceOf[Boolean])
-//    })
-//
-//    findPreference(Key.udpdns).setOnPreferenceChangeListener((_, value) => {
-//      app.profileManager.updateAllProfile_Boolean("udpdns", value.asInstanceOf[Boolean])
-//    })
-//    findPreference(Key.dns).setOnPreferenceChangeListener((_, value) => {
-//      app.profileManager.updateAllProfile_String(Key.dns, value.asInstanceOf[String])
-//    })
-//    findPreference(Key.china_dns).setOnPreferenceChangeListener((_, value) => {
-//      app.profileManager.updateAllProfile_String(Key.china_dns, value.asInstanceOf[String])
-//    })
-//    findPreference(Key.ipv6).setOnPreferenceChangeListener((_, value) => {
-//      app.profileManager.updateAllProfile_Boolean("ipv6", value.asInstanceOf[Boolean])
-//    })
-//
-//    val switch = findPreference(Key.isAutoConnect).asInstanceOf[SwitchPreference]
-//    switch.setOnPreferenceChangeListener((_, value) => {
-//      BootReceiver.setEnabled(activity, value.asInstanceOf[Boolean])
-//      true
-//    })
-//    if (getPreferenceManager.getSharedPreferences.getBoolean(Key.isAutoConnect, false)) {
-//      BootReceiver.setEnabled(activity, true)
-//      getPreferenceManager.getSharedPreferences.edit.remove(Key.isAutoConnect).apply
-//    }
-//    switch.setChecked(BootReceiver.getEnabled(activity))
-//
-//    val tfo = findPreference(Key.tfo).asInstanceOf[SwitchPreference]
-//    tfo.setOnPreferenceChangeListener((_, v) => {
-//      new Thread {
-//        override def run() {
-//          val value = v.asInstanceOf[Boolean]
-//          val result = TcpFastOpen.enabled(value)
-//          if (result != null && result != "Success.")
-//            activity.handler.post(() => {
-//              Snackbar.make(activity.findViewById(android.R.id.content), result, Snackbar.LENGTH_LONG).show()
-//            })
-//        }
-//      }.start
-//      true
-//    })
-//    if (!TcpFastOpen.supported) {
-//      tfo.setEnabled(false)
-//      tfo.setSummary(getString(R.string.tcp_fastopen_summary_unsupported, java.lang.System.getProperty("os.version")))
-//    }
-//
-//    findPreference("recovery").setOnPreferenceClickListener((preference: Preference) => {
-//      app.track(TAG, "reset")
-//      activity.recovery()
-//      true
-//    })
+
     findPreference(Key.scan_code).setOnPreferenceClickListener((preference: Preference) => {
       qrcodeScan()
       true
@@ -305,8 +259,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
     remain_time = new Preference(this.getActivity);
     remain_flow.setEnabled(false)
     remain_time.setEnabled(false)
-//    remain_flow=findPreference(Key.remain_flow)
-//    remain_day=findPreference(Key.remain_day)
+
     refreshExperience()
     select_experience.setOnPreferenceClickListener((preference: Preference) => {
       if(!SharedPrefsUtil.getValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false)){
@@ -430,10 +383,8 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
               case Some(p) =>
                 app.profileId(p.id)
                 p
-              case None =>
-                val default = app.profileManager.createDefault()
-                app.profileId(default.id)
-                default
+              case None => null
+
             }
             setProfile(first)
             experince_extend =""
@@ -445,167 +396,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
       true
     })
 
-//    findPreference("ignore_battery_optimization").setOnPreferenceClickListener((preference: Preference) => {
-//      app.track(TAG, "ignore_battery_optimization")
-//      activity.ignoreBatteryOptimization()
-//      true
-//    })
-//
-//    findPreference("aclupdate").setOnPreferenceClickListener((preference: Preference) => {
-//      app.track(TAG, "aclupdate")
-//      val url = getPreferenceManager.getSharedPreferences.getString(Key.aclurl, "");
-//      if(url == "")
-//      {
-//        new AlertDialog.Builder(activity)
-//          .setTitle(getString(R.string.aclupdate).formatLocal(Locale.ENGLISH, BuildConfig.VERSION_NAME))
-//          .setNegativeButton(getString(android.R.string.ok), null)
-//          .setMessage(R.string.aclupdate_url_notset)
-//          .create()
-//          .show()
-//      }
-//      else
-//      {
-//        downloadAcl(url)
-//      }
-//      true
-//    })
-//
-//    if(new File(app.getApplicationInfo.dataDir + '/' + "self.acl").exists == false && getPreferenceManager.getSharedPreferences.getString(Key.aclurl, "") != "")
-//    {
-//      downloadAcl(getPreferenceManager.getSharedPreferences.getString(Key.aclurl, ""))
-//    }
-//
-//    findPreference("about").setOnPreferenceClickListener((preference: Preference) => {
-//      app.track(TAG, "about")
-//      val web = new WebView(activity)
-//      web.loadUrl("file:///android_asset/pages/about.html")
-//      web.setWebViewClient(new WebViewClient() {
-//        override def shouldOverrideUrlLoading(view: WebView, url: String): Boolean = {
-//          try {
-//            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-//          } catch {
-//            case _: android.content.ActivityNotFoundException => // Ignore
-//          }
-//          true
-//        }
-//      })
-//
-//      new AlertDialog.Builder(activity)
-//        .setTitle(getString(R.string.about_title).formatLocal(Locale.ENGLISH, BuildConfig.VERSION_NAME))
-//        .setNegativeButton(getString(android.R.string.ok), null)
-//        .setView(web)
-//        .create()
-//        .show()
-//      true
-//    })
-//
-//    findPreference("logcat").setOnPreferenceClickListener((preference: Preference) => {
-//      app.track(TAG, "logcat")
-//
-//      val et_logcat = new EditText(activity)
-//
-//      try {
-//        val logcat = Runtime.getRuntime().exec("logcat -d")
-//        val br = new BufferedReader(new InputStreamReader(logcat.getInputStream()))
-//        var line = ""
-//        line = br.readLine()
-//        while (line != null) {
-//            et_logcat.append(line)
-//            et_logcat.append("\n")
-//            line = br.readLine()
-//        }
-//        br.close()
-//      } catch {
-//        case e: Exception =>  // unknown failures, probably shouldn't retry
-//          e.printStackTrace()
-//      }
-//
-//      new AlertDialog.Builder(activity)
-//        .setTitle("Logcat")
-//        .setNegativeButton(getString(android.R.string.ok), null)
-//        .setView(et_logcat)
-//        .create()
-//        .show()
-//      true
-//    })
-//
-//    findPreference(Key.frontproxy).setOnPreferenceClickListener((preference: Preference) => {
-//      val prefs = getPreferenceManager.getSharedPreferences()
-//
-//      val view = View.inflate(activity, R.layout.layout_front_proxy, null);
-//      val sw_frontproxy_enable = view.findViewById(R.id.sw_frontproxy_enable).asInstanceOf[Switch]
-//      val sp_frontproxy_type = view.findViewById(R.id.sp_frontproxy_type).asInstanceOf[Spinner]
-//      val et_frontproxy_addr = view.findViewById(R.id.et_frontproxy_addr).asInstanceOf[EditText]
-//      val et_frontproxy_port = view.findViewById(R.id.et_frontproxy_port).asInstanceOf[EditText]
-//      val et_frontproxy_username = view.findViewById(R.id.et_frontproxy_username).asInstanceOf[EditText]
-//      val et_frontproxy_password = view.findViewById(R.id.et_frontproxy_password).asInstanceOf[EditText]
-//
-//      sp_frontproxy_type.setSelection(getResources().getStringArray(R.array.frontproxy_type_entry).indexOf(prefs.getString("frontproxy_type", "socks5")))
-//
-//      if (prefs.getInt("frontproxy_enable", 0) == 1) {
-//        sw_frontproxy_enable.setChecked(true)
-//      }
 
-//      et_frontproxy_addr.setText(prefs.getString("frontproxy_addr", ""))
-//      et_frontproxy_port.setText(prefs.getString("frontproxy_port", ""))
-//      et_frontproxy_username.setText(prefs.getString("frontproxy_username", ""))
-//      et_frontproxy_password.setText(prefs.getString("frontproxy_password", ""))
-//
-//      sw_frontproxy_enable.setOnCheckedChangeListener(((_, isChecked: Boolean) => {
-//        val prefs_edit = prefs.edit()
-//        if (isChecked) {
-//          prefs_edit.putInt("frontproxy_enable", 1)
-//          if (!new File(app.getApplicationInfo.dataDir + "/proxychains.conf").exists) {
-//            val proxychains_conf = ConfigUtils
-//              .PROXYCHAINS.formatLocal(Locale.ENGLISH, prefs.getString("frontproxy_type", "socks5")
-//                                                    , prefs.getString("frontproxy_addr", "")
-//                                                    , prefs.getString("frontproxy_port", "")
-//                                                    , prefs.getString("frontproxy_username", "")
-//                                                    , prefs.getString("frontproxy_password", ""))
-//            Utils.printToFile(new File(app.getApplicationInfo.dataDir + "/proxychains.conf"))(p => {
-//              p.println(proxychains_conf)
-//            })
-//          }
-//        } else {
-//          prefs_edit.putInt("frontproxy_enable", 0)
-//          if (new File(app.getApplicationInfo.dataDir + "/proxychains.conf").exists) {
-//            new File(app.getApplicationInfo.dataDir + "/proxychains.conf").delete
-//          }
-//        }
-//        prefs_edit.apply()
-//      }): CompoundButton.OnCheckedChangeListener)
-//
-//      new AlertDialog.Builder(activity)
-//        .setTitle(getString(R.string.frontproxy_set))
-//        .setPositiveButton(android.R.string.ok, ((_, _) => {
-//          val prefs_edit = prefs.edit()
-//          prefs_edit.putString("frontproxy_type", sp_frontproxy_type.getSelectedItem().toString())
-//
-//          prefs_edit.putString("frontproxy_addr", et_frontproxy_addr.getText().toString())
-//          prefs_edit.putString("frontproxy_port", et_frontproxy_port.getText().toString())
-//          prefs_edit.putString("frontproxy_username", et_frontproxy_username.getText().toString())
-//          prefs_edit.putString("frontproxy_password", et_frontproxy_password.getText().toString())
-//
-//          prefs_edit.apply()
-//
-//          if (new File(app.getApplicationInfo.dataDir + "/proxychains.conf").exists) {
-//            val proxychains_conf = ConfigUtils
-//              .PROXYCHAINS.formatLocal(Locale.ENGLISH, prefs.getString("frontproxy_type", "socks5")
-//                                                    , prefs.getString("frontproxy_addr", "")
-//                                                    , prefs.getString("frontproxy_port", "")
-//                                                    , prefs.getString("frontproxy_username", "")
-//                                                    , prefs.getString("frontproxy_password", ""))
-//            Utils.printToFile(new File(app.getApplicationInfo.dataDir + "/proxychains.conf"))(p => {
-//              p.println(proxychains_conf)
-//            })
-//          }
-//        }): DialogInterface.OnClickListener)
-//        .setNegativeButton(android.R.string.no, null)
-//        .setView(view)
-//        .create()
-//        .show()
-//      true
-//    })
   }
 
   def refreshExperience(): Unit ={
@@ -778,10 +569,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
           case Some(p) =>
             app.profileId(p.id)
             p
-          case None =>
-            val default = app.profileManager.createDefault()
-            app.profileId(default.id)
-            default
+          case None => null
         }
     }
 

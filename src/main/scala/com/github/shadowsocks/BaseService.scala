@@ -57,7 +57,7 @@ import com.github.shadowsocks.utils._
 import com.github.shadowsocks.ShadowsocksApplication.app
 import com.github.shadowsocks.database.Profile
 import okhttp3.{Dns, FormBody, OkHttpClient, Request}
-
+import com.github.shadowsocks.flyrouter.R
 
 import scala.util.Random
 

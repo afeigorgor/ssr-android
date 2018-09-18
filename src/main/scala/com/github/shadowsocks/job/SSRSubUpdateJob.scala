@@ -18,7 +18,7 @@ import android.util.{Base64, Log}
 import android.widget.Toast
 import android.content.Context
 import android.os.Looper
-import com.github.shadowsocks.R
+import com.github.shadowsocks.flyrouter.R
 
 /**
   * @author Mygod

@@ -67,6 +67,7 @@ import com.github.shadowsocks.job.SSRSubUpdateJob
 import com.github.shadowsocks.ShadowsocksApplication.app
 import okhttp3.{Call, Response}
 import top.bitleo.http.{NetUtils, ToolUtils}
+import com.github.shadowsocks.flyrouter.R
 
 import scala.util.Random
 
@@ -312,20 +313,21 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
                 var pingValue:String = elapsed.toString+"ms"
                 var requestJson = SharedPrefsUtil.getValue(this,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,"")
                 if(!"".equals(requestJson)){
-                  var  p = app.currentProfile match {
+                  var  p:Profile = app.currentProfile match {
                     case Some(p) => p
                     case None =>
                       app.profileManager.getFirstProfile match {
                         case Some(p) =>
                           app.profileId(p.id)
                           p
-                        case None =>
-                          val default = app.profileManager.createDefault()
-                          app.profileId(default.id)
-                          default
+                        case None => null
                       }
                   }
-                  requestJson=ToolUtils.getRecordJson(requestJson,pingValue,p.host);
+                  if(p==null){
+                    requestJson=ToolUtils.getRecordJson(requestJson,pingValue,"127.0.0.1");
+                  }else{
+                    requestJson=ToolUtils.getRecordJson(requestJson,pingValue,p.host);
+                  }
                   Log.d(TAG,"xiaoliu ping requestJson:"+requestJson)
                   var encodePingValue = AESOperator.getInstance().encrypt(requestJson)
                    NetUtils.getInstance().postDataAsynToNet(NetUtils.RECORD_PING,encodePingValue,new NetUtils.MyNetCall {
@@ -379,7 +381,7 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
       case Some(first) => {
 
       }
-      case None => app.ssrsubManager.createDefault()
+      case None => null
     }
 
     SSRSubUpdateJob.schedule()
@@ -445,10 +447,14 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
       updatePreferenceScreen(app.currentProfile match {
         case Some(profile) => profile // updated
         case None => // removed
-          app.switchProfile((app.profileManager.getFirstProfile match {
+          var p:Profile =app.profileManager.getFirstProfile match {
             case Some(first) => first
-            case None => app.profileManager.createDefault()
-          }).id)
+            case None => null
+          }
+          if(p!=null){
+            app.switchProfile(p.id)
+          }
+          p
       })
 
       if (serviceStarted) serviceLoad()

@@ -214,5 +214,7 @@
   <string name="faild">请求失败</string>
   <string name="success">请求成功</string>
   <string name="sub_success">订阅更新成功</string>
+  <string name="card_number_title">卡号</string>
+  <string name="activation_code_title">激活码</string>
 
 </resources>

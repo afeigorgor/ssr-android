@@ -45,6 +45,7 @@ import android.net.VpnService
 import android.os.{IBinder, Handler}
 import com.github.shadowsocks.utils.ConfigUtils
 import com.github.shadowsocks.ShadowsocksApplication.app
+import com.github.shadowsocks.flyrouter.R
 
 class ShadowsocksRunnerService extends Service with ServiceBoundContext {
   val handler = new Handler()

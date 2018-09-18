@@ -58,6 +58,7 @@ import com.github.shadowsocks.utils.{Key, Utils}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.language.implicitConversions
+import com.github.shadowsocks.flyrouter.R
 
 object AppManager {
   case class ProxiedApp(name: String, packageName: String, icon: Drawable)

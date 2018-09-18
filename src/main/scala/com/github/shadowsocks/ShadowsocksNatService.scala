@@ -58,6 +58,8 @@ import java.io.RandomAccessFile
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
+import com.github.shadowsocks.flyrouter.R
+import com.github.shadowsocks.flyrouter.BuildConfig
 
 class ShadowsocksNatService extends BaseService {
 

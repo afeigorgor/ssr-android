@@ -48,6 +48,7 @@ import android.widget.{CheckedTextView, Switch}
 import com.github.shadowsocks.database.Profile
 import com.github.shadowsocks.utils.TaskerSettings
 import com.github.shadowsocks.ShadowsocksApplication.app
+import com.github.shadowsocks.flyrouter.R
 
 /**
   * @author CzBiX

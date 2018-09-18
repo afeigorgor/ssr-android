@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools" package="com.github.shadowsocks"
-          android:versionCode="325"
-          android:versionName="3.5.4">
+          xmlns:tools="http://schemas.android.com/tools" package="com.github.shadowsocks.flyrouter"
+          android:versionCode="10"
+          android:versionName="1.0.0">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -28,7 +28,7 @@
 
     <application
             android:allowBackup="true"
-            android:name=".ShadowsocksApplication"
+            android:name="com.github.shadowsocks.ShadowsocksApplication"
             android:hardwareAccelerated="true"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher"
@@ -47,7 +47,7 @@
                 <!--android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>-->
 
         <activity
-                android:name=".Shadowsocks"
+                android:name="com.github.shadowsocks.Shadowsocks"
                 android:label="@string/app_name"
                 android:launchMode="singleTask">
             <intent-filter>
@@ -63,7 +63,7 @@
         </activity>
 
         <activity
-                android:name=".ShadowsocksInfoActivity"
+                android:name="com.github.shadowsocks.ShadowsocksInfoActivity"
                 android:label="@string/app_info"
                >
             <meta-data android:name="android.app.shortcuts"
@@ -71,7 +71,7 @@
         </activity>
 
         <activity
-                android:name=".ShadowsocksRunnerActivity"
+                android:name="com.github.shadowsocks.ShadowsocksRunnerActivity"
                 android:theme="@android:style/Theme.Translucent.NoTitleBar"
                 android:excludeFromRecents="true"
 		            android:taskAffinity=""
@@ -79,9 +79,9 @@
         </activity>
 
         <activity
-                android:name=".ProfileManagerActivity"
+                android:name="com.github.shadowsocks.ProfileManagerActivity"
                 android:label="@string/profiles"
-                android:parentActivityName=".Shadowsocks"
+                android:parentActivityName="com.github.shadowsocks.Shadowsocks"
                 android:excludeFromRecents="true"
                 android:launchMode="singleTask">
             <intent-filter>
@@ -121,15 +121,15 @@
         </activity>
 
         <activity
-                android:name=".ScannerActivity"
+                android:name="com.github.shadowsocks.ScannerActivity"
                 android:label="@string/add_profile_methods_scan_qr_code"
-                android:parentActivityName=".ProfileManagerActivity"
+                android:parentActivityName="com.github.shadowsocks.ProfileManagerActivity"
                 android:excludeFromRecents="true"/>
 
         <activity
-                android:name=".AppManager"
+                android:name="com.github.shadowsocks.AppManager"
                 android:label="@string/proxied_apps"
-                android:parentActivityName=".Shadowsocks"
+                android:parentActivityName="com.github.shadowsocks.Shadowsocks"
                 android:excludeFromRecents="true"
                 android:launchMode="singleTask"/>
 
@@ -140,7 +140,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ShadowsocksQuickSwitchActivity"
+        <activity android:name="com.github.shadowsocks.ShadowsocksQuickSwitchActivity"
                   android:label="@string/quick_switch"
                   android:launchMode="singleInstance"
                   android:excludeFromRecents="true"
@@ -153,7 +153,7 @@
         </activity>
 
         <activity
-                android:name=".QuickToggleShortcut"
+                android:name="com.github.shadowsocks.QuickToggleShortcut"
                 android:label="@string/quick_toggle"
                 android:theme="@android:style/Theme.Translucent.NoTitleBar"
                 android:excludeFromRecents="true"
@@ -165,18 +165,18 @@
         </activity>
 
         <service
-                android:name=".ShadowsocksRunnerService"
+                android:name="com.github.shadowsocks.ShadowsocksRunnerService"
                 android:exported="false">
         </service>
 
         <service
-                android:name=".ShadowsocksNatService"
+                android:name="com.github.shadowsocks.ShadowsocksNatService"
                 android:process=":bg"
                 android:exported="false">
         </service>
 
         <service
-                android:name=".ShadowsocksVpnService"
+                android:name="com.github.shadowsocks.ShadowsocksVpnService"
                 android:process=":bg"
                 android:label="@string/app_name"
                 android:permission="android.permission.BIND_VPN_SERVICE"
@@ -186,7 +186,7 @@
             </intent-filter>
         </service>
 
-        <service android:name=".ShadowsocksTileService" android:label="@string/quick_toggle"
+        <service android:name="com.github.shadowsocks.ShadowsocksTileService" android:label="@string/quick_toggle"
                  android:process=":bg"
                  android:icon="@drawable/ic_start_connected"
                  android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
@@ -195,13 +195,13 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".BootReceiver" android:enabled="false">
+        <receiver android:name="com.github.shadowsocks.BootReceiver" android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".TaskerReceiver" tools:ignore="ExportedReceiver">
+        <receiver android:name="com.github.shadowsocks.TaskerReceiver" tools:ignore="ExportedReceiver">
             <intent-filter>
                 <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING"/>
             </intent-filter>

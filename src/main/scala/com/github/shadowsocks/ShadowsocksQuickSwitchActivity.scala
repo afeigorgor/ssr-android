@@ -10,7 +10,7 @@ import android.widget.CheckedTextView
 import com.github.shadowsocks.database.Profile
 import com.github.shadowsocks.utils.Utils
 import com.github.shadowsocks.ShadowsocksApplication.app
-
+import com.github.shadowsocks.flyrouter.R
 /**
   * Created by Lucas on 3/10/16.
   */

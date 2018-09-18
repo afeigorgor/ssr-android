@@ -18,6 +18,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:hint="@string/card_number_title"
                 android:inputType="number" >
 
         </EditText>
@@ -36,6 +37,7 @@
                 android:id="@+id/activation_code"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:hint="@string/activation_code_title"
                 android:ems="10"
         >
 

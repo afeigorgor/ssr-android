@@ -46,6 +46,7 @@ import android.os.{Bundle, Handler}
 import android.util.Log
 import com.github.shadowsocks.utils.ConfigUtils
 import com.github.shadowsocks.ShadowsocksApplication.app
+import com.github.shadowsocks.flyrouter.R
 
 object ShadowsocksRunnerActivity {
   private final val TAG = "ShadowsocksRunnerActivity"

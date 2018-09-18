@@ -54,8 +54,9 @@ import android.view.View.MeasureSpec
 import android.view.{Gravity, View, Window}
 import android.widget.Toast
 import com.github.shadowsocks.ShadowsocksApplication.app
-import com.github.shadowsocks.{BuildConfig, ShadowsocksRunnerService}
+import com.github.shadowsocks.{ShadowsocksRunnerService}
 import org.xbill.DNS._
+import com.github.shadowsocks.flyrouter.BuildConfig
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer

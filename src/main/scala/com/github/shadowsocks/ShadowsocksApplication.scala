@@ -63,6 +63,8 @@ import com.j256.ormlite.logger.LocalLog
 import eu.chainfire.libsuperuser.Shell
 
 import scala.collection.mutable.ArrayBuffer
+import com.github.shadowsocks.flyrouter.R
+import com.github.shadowsocks.flyrouter.BuildConfig
 
 object ShadowsocksApplication {
   var app: ShadowsocksApplication = _

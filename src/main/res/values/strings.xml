@@ -224,6 +224,8 @@
   <string name="faild">request faild</string>
   <string name="success">request success</string>
   <string name="sub_success">update subscription success</string>
+  <string name="card_number_title">Card number</string>
+  <string name="activation_code_title">Activation code</string>
 
 
 </resources>

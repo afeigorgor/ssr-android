@@ -57,6 +57,8 @@ import com.github.shadowsocks.job.AclSyncJob
 import com.github.shadowsocks.utils._
 
 import scala.collection.mutable.ArrayBuffer
+import com.github.shadowsocks.flyrouter.R
+import com.github.shadowsocks.flyrouter.BuildConfig
 
 class ShadowsocksVpnService extends VpnService with BaseService {
   val TAG = "ShadowsocksVpnService"

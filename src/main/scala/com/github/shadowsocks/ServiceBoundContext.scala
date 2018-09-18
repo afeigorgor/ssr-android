@@ -5,7 +5,7 @@ import android.os.{RemoteException, IBinder}
 import com.github.shadowsocks.aidl.{IShadowsocksServiceCallback, IShadowsocksService}
 import com.github.shadowsocks.utils.Action
 import com.github.shadowsocks.ShadowsocksApplication.app
-
+import com.github.shadowsocks.flyrouter.R
 /**
   * @author Mygod
   */

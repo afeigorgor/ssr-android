@@ -11,7 +11,7 @@ import android.support.v4.content.ContextCompat
 import com.github.shadowsocks.aidl.IShadowsocksServiceCallback.Stub
 import com.github.shadowsocks.utils.{TrafficMonitor, Action, State, Utils}
 import com.github.shadowsocks.ShadowsocksApplication.app
-
+import com.github.shadowsocks.flyrouter.R
 /**
   * @author Mygod
   */

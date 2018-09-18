@@ -40,7 +40,7 @@ package com.github.shadowsocks.utils
 
 import android.content.{Context, Intent}
 import android.os.Bundle
-import com.github.shadowsocks.R
+import com.github.shadowsocks.flyrouter.R
 import com.github.shadowsocks.ShadowsocksApplication.app
 import com.twofortyfouram.locale.api.{Intent => ApiIntent}
 

@@ -5,7 +5,7 @@ import android.graphics.drawable.Icon
 import android.service.quicksettings.{Tile, TileService}
 import com.github.shadowsocks.aidl.IShadowsocksServiceCallback
 import com.github.shadowsocks.utils.{State, Utils}
-
+import com.github.shadowsocks.flyrouter.R
 /**
   * @author Mygod
   */

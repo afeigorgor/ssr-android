@@ -49,6 +49,7 @@ import android.preference.PreferenceManager
 import com.github.shadowsocks.Shadowsocks.TAG
 
 import scala.collection.mutable.ArrayBuffer
+import com.github.shadowsocks.flyrouter.R
 
 final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClickListener with ServiceBoundContext
   with View.OnClickListener with CreateNdefMessageCallback {

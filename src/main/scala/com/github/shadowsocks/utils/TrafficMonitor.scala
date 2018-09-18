@@ -2,7 +2,7 @@ package com.github.shadowsocks.utils
 
 import java.text.DecimalFormat
 
-import com.github.shadowsocks.R
+import com.github.shadowsocks.flyrouter.R
 import com.github.shadowsocks.ShadowsocksApplication.app
 
 object TrafficMonitor {

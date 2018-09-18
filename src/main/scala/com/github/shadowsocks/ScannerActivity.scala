@@ -15,6 +15,7 @@ import com.google.zxing.Result
 import com.github.shadowsocks.ShadowsocksApplication.app
 import com.github.shadowsocks.utils.Parser
 import me.dm7.barcodescanner.zxing.ZXingScannerView
+import com.github.shadowsocks.flyrouter.R
 
 object ScannerActivity {
   private final val MY_PERMISSIONS_REQUEST_CAMERA = 1
