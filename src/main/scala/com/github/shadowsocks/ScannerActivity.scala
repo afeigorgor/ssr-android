@@ -10,6 +10,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.text.TextUtils
+import android.view.KeyEvent
 import android.widget.Toast
 import com.google.zxing.Result
 import com.github.shadowsocks.ShadowsocksApplication.app
@@ -53,13 +54,17 @@ class ScannerActivity extends AppCompatActivity with ZXingScannerView.ResultHand
     }
   }
 
+  def back(): Unit ={
+    finish()
+  }
+
   override def onCreate(state: Bundle) {
     super.onCreate(state)
     setContentView(R.layout.layout_scanner)
     val toolbar = findViewById(R.id.toolbar).asInstanceOf[Toolbar]
     toolbar.setTitle(getTitle)
     toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material)
-    toolbar.setNavigationOnClickListener(_ => navigateUp())
+    toolbar.setNavigationOnClickListener(_ => back())
     scannerView = findViewById(R.id.scanner).asInstanceOf[ZXingScannerView]
     if (Build.VERSION.SDK_INT >= 25) getSystemService(classOf[ShortcutManager]).reportShortcutUsed("scan")
   }
@@ -81,6 +86,14 @@ class ScannerActivity extends AppCompatActivity with ZXingScannerView.ResultHand
   override def onPause() {
     super.onPause()
     scannerView.stopCamera()           // Stop camera on pause
+  }
+
+  override def onKeyDown(keyCode: Int, event: KeyEvent): Boolean = {
+    if(KeyEvent.KEYCODE_BACK==keyCode){
+      back()
+      true
+    }
+    false
   }
 
   override def handleResult(rawResult: Result) = {    

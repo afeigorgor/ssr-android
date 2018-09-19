@@ -2,7 +2,7 @@
 <resources>
 
   <string name="app_name">FLYRouter</string>
-  <string name="app_info">info</string>
+  <string name="app_info">Info</string>
   <string name="quick_toggle">Toggle</string>
 
   <!-- global/misc category -->

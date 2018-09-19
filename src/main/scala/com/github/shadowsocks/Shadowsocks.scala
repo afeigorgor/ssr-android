@@ -68,8 +68,10 @@ import com.github.shadowsocks.ShadowsocksApplication.app
 import okhttp3.{Call, Response}
 import top.bitleo.http.{NetUtils, ToolUtils}
 import com.github.shadowsocks.flyrouter.R
+import org.json.JSONObject
 
 import scala.util.Random
+import android.net.Uri
 
 object Typefaces {
   def get(c: Context, assetPath: String): Typeface = {
@@ -259,8 +261,9 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
-    getWindow.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
-    getWindow.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+//    getWindow.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+//    getWindow.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+
     setContentView(R.layout.layout_main)
     // Initialize Toolbar
     val toolbar = findViewById(R.id.toolbar).asInstanceOf[Toolbar]
@@ -389,6 +392,20 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
     handler.post(() => attachService)
 
     ToolUtils.requestPermissionsReadPhoneState(this);
+
+
+
+    var intent:Intent = getIntent();
+    val uri = intent.getData
+    if (uri != null) {
+      val name = uri.getQueryParameter("name")
+      val scheme = uri.getScheme
+      val host = uri.getHost
+      val port = uri.getPort + ""
+      val path = uri.getPath
+      val query = uri.getQuery
+      Log.d(TAG,"获得的数据name=" + name + "/r" + "scheme" + scheme + "/r" + "host" + "host" + host + "/r" + "port" + port + "/r" + "path" + path + "/r" + "query" + query)
+    }
   }
 
   private def hideCircle() {
@@ -468,10 +485,38 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
 
   protected override def onResume() {
     super.onResume()
-
     app.refreshContainerHolder
-
     updateState(updateCurrentProfile())
+    syncRemainData();
+
+  }
+
+  private def syncRemainData(): Unit ={
+    var requestJson  = SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,"")
+    if(!"".equals(requestJson)){
+      var encodeJson = AESOperator.getInstance().encrypt(requestJson)
+      NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO,encodeJson,new NetUtils.MyNetCall {
+        override def success(call: Call, response: Response): Unit = {
+          var body =response.body().string()
+          Log.d(TAG, "xiaoliu syncRemainData success:"+body)
+          if(body!=null){
+            var json = ToolUtils.parseToJson(body)
+            var code =json.getInt("code")
+            if(code==200) {
+              var dataobj: JSONObject = new JSONObject(json.getString("data"))
+              var url = dataobj.getString("url")
+              var remainFlow = dataobj.getString("remain")
+              var remainTime = dataobj.getInt("effective_time")
+              SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,remainFlow)
+              SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,remainTime)
+            }
+          }
+        }
+        override def failed(call: Call, e: IOException): Unit = {
+
+        }
+      })
+    }
   }
 
   private def updatePreferenceScreen(profile: Profile) {

@@ -38,7 +38,7 @@ object SSRSubUpdateJob {
 class SSRSubUpdateJob() extends Job {
   override def  onRunJob(params: Params): Result = {
     Looper.prepare()
-    if (app.settings.getInt(Key.ssrsub_autoupdate, 0) == 1) {
+    if (app.settings.getInt(Key.ssrsub_autoupdate, 1) == 1) {
       app.ssrsubManager.getAllSSRSubs match {
         case Some(ssrsubs) =>
           var result = 1

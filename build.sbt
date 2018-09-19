@@ -6,7 +6,7 @@ android.useSupportVectors
 
 name := "shadowsocksr"
 
-applicationId := "in.zhaoj.shadowsocksrr"
+applicationId := "com.github.shadowsocks.flyrouter"
 
 platformTarget := "android-25"
 

@@ -17,6 +17,9 @@ public class ToolUtils {
     public static final String LOCAL_BETA_URL_GROUP= "beta_url_group";
     public static final String LOCAL_BETA_URL= "beta_group";
     public static final String LOCAL_BETA_JSON= "beta_json";
+    public static final String LOCAL_BETA_REMAIN_FLOW= "remain_flow";
+    public static final String LOCAL_BETA_REMAIN_DATE= "remain_date";
+    public static final String DEFUALT_PASS = "bypass-lan-china";
     public static final boolean LOCAL_TEST =true;
     public static  final  String TEST_SSR_URL= "https://s.vpnwifirouter.com/subscribe/rd4iYti-Z3vP6FuFK2fNK7ByaH6mpjTONqGXWhbGDvo";
 //    public static  final  String TEST_SSR_URL= "https://fly.517.bz/subscribe/kELwxznF-V-aAUQRSTEJ3RdkWg0fGkE5Wb3PC3ns0Go";

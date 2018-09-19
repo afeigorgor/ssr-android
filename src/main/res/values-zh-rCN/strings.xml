@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">FLYRouter</string>
+  <string name="app_info">信息</string>
   <string name="quick_toggle">开关</string>
 
   <string name="misc_cat">其他</string>
@@ -202,7 +203,7 @@
   <string name="experience_cat">体验设置</string>
   <string name="use_experience">激活体验卡</string>
   <string name="del_experience">删除体验卡</string>
-  <string name="title_experience">请输入体验卡号和激活码</string>
+  <string name="title_experience">输入卡号和激活码</string>
   <string name="del_experience_tip">是否删除体验卡</string>
   <string name="remain_flow">剩余流量：</string>
   <string name="remain_time">剩余时间：</string>
@@ -214,7 +215,7 @@
   <string name="faild">请求失败</string>
   <string name="success">请求成功</string>
   <string name="sub_success">订阅更新成功</string>
-  <string name="card_number_title">卡号</string>
-  <string name="activation_code_title">激活码</string>
+  <string name="card_number_title">输入卡号</string>
+  <string name="activation_code_title">输入激活码</string>
 
 </resources>

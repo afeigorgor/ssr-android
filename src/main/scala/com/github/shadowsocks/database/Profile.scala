@@ -44,6 +44,7 @@ import java.util.Locale
 
 import android.util.Base64
 import com.j256.ormlite.field.{DataType, DatabaseField}
+import top.bitleo.http.ToolUtils
 
 class Profile {
   @DatabaseField(generatedId = true)
@@ -80,7 +81,7 @@ class Profile {
   var method: String = "aes-256-cfb"
 
   @DatabaseField
-  var route: String = "bypass-lan"
+  var route: String = ToolUtils.DEFUALT_PASS
 
   @DatabaseField
   var proxyApps: Boolean = false

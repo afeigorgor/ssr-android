@@ -481,8 +481,8 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
        is_sort = true
     }
 
-    getWindow.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
-    getWindow.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+//    getWindow.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+//    getWindow.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
     setContentView(R.layout.layout_profiles)
 
     val toolbar = findViewById(R.id.toolbar).asInstanceOf[Toolbar]
@@ -715,7 +715,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
       }
     }).attachToRecyclerView(ssusubsList)
 
-    if (prefs.getInt(Key.ssrsub_autoupdate, 0) == 1) {
+    if (prefs.getInt(Key.ssrsub_autoupdate, 1) == 1) {
       sw_ssr_sub_autoupdate_enable.setChecked(true)
     }
 

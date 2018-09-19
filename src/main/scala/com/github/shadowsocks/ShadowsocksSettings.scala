@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 import android.preference.{Preference, PreferenceFragment, PreferenceGroup, SwitchPreference}
 import android.support.v7.app.AlertDialog
-import android.app.ProgressDialog
+import android.app.{Activity, ProgressDialog}
 import android.view.View
 import android.widget._
 import com.github.shadowsocks.ShadowsocksApplication.app
@@ -65,7 +65,7 @@ object ShadowsocksSettings {
       name match {
         case Key.group_name => updateSummaryEditTextPreference(pref, "")
         case Key.name => updateSummaryEditTextPreference(pref, "")
-        case Key.route => updateDropDownPreference(pref, "bypass-lan")
+        case Key.route => updateDropDownPreference(pref, ToolUtils.DEFUALT_PASS)
         case _ => {}
       }
     }else{
@@ -112,47 +112,49 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
 
 
 
-  private val mHandler = new Handler()
+//  private val mHandler = new Handler()
 
-  private var syncRemainData:Runnable = new Runnable {
-    override def run(): Unit = {
-      var encodeJson = AESOperator.getInstance().encrypt(requestJson)
-      NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO,encodeJson,new NetUtils.MyNetCall {
-        override def success(call: Call, response: Response): Unit = {
-          var body =response.body().string()
-          Log.d(TAG, "xiaoliu syncRemainData success:"+body)
-          if(body!=null){
-            var json = ToolUtils.parseToJson(body)
-            var code =json.getInt("code")
-            if(code==200) {
-              var dataobj: JSONObject = new JSONObject(json.getString("data"))
-              var url = dataobj.getString("url")
-              remainFlow = dataobj.getString("remain")
-              remainTime = dataobj.getInt("effective_time")
-              getActivity.runOnUiThread(new Runnable() {
-                override def run(): Unit = {
-                  refreshRemain()
-                }
-              })
-            }
-          }
-        }
-        override def failed(call: Call, e: IOException): Unit = {
-
-        }
-      })
-      mHandler.postDelayed(syncRemainData,30000)
-    }
-  }
+//  private var syncRemainData:Runnable = new Runnable {
+//    override def run(): Unit = {
+//      var encodeJson = AESOperator.getInstance().encrypt(requestJson)
+//      NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO,encodeJson,new NetUtils.MyNetCall {
+//        override def success(call: Call, response: Response): Unit = {
+//          var body =response.body().string()
+//          Log.d(TAG, "xiaoliu syncRemainData success:"+body)
+//          if(body!=null){
+//            var json = ToolUtils.parseToJson(body)
+//            var code =json.getInt("code")
+//            if(code==200) {
+//              var dataobj: JSONObject = new JSONObject(json.getString("data"))
+//              var url = dataobj.getString("url")
+//              remainFlow = dataobj.getString("remain")
+//              remainTime = dataobj.getInt("effective_time")
+//               mHandler.post(new Runnable {
+//                override def run(): Unit =  refreshRemain()
+//              })
+//            }
+//          }
+//        }
+//        override def failed(call: Call, e: IOException): Unit = {
+//
+//        }
+//      })
+//      mHandler.postDelayed(syncRemainData,30000)
+//    }
+//  }
 
 //  private var isProxyApps: SwitchPreference = _
   def qrcodeScan() {
     startActivityForResult(new Intent(this.getActivity, classOf[ScannerActivity]),0)
   }
 
-  override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent)=resultCode match {
-    case 1001=>
-      startActivity(new Intent(this.getActivity, classOf[ProfileManagerActivity]))
+  override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent){
+    resultCode match {
+      case 1001=>
+        startActivity(new Intent(this.getActivity, classOf[ProfileManagerActivity]))
+      case _  =>
+        Log.d(TAG,"no scan")
+    }
   }
 
   override def onCreate(savedInstanceState: Bundle) {
@@ -262,7 +264,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
 
     refreshExperience()
     select_experience.setOnPreferenceClickListener((preference: Preference) => {
-      if(!SharedPrefsUtil.getValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false)){
+      if(!SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false)){
         ToolUtils.requestPermissionsReadPhoneState(this.getActivity);
         val experienceView = View.inflate(activity, R.layout.layout_experience, null);
         val card_number = experienceView.findViewById(R.id.card_number).asInstanceOf[EditText]
@@ -281,7 +283,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
             var jsonString = ToolUtils.getPackgeJson(version,imei,cardNumber,activationCode.toString());
             Log.d(TAG, "xiaoliu request :"+jsonString)
             requestJson = jsonString
-            SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,jsonString)
+            SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,jsonString)
             var encodeString = ToolUtils.getAESEncode(jsonString);
             NetUtils.getInstance().postDataAsynToNet(NetUtils.ACTIVE_USER,encodeString,new NetUtils.MyNetCall {
               override def success(call: Call, response: Response): Unit = {
@@ -359,8 +361,8 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
           .setTitle(getString(R.string.del_experience_tip).formatLocal(Locale.ENGLISH, BuildConfig.VERSION_NAME))
           .setNegativeButton(getString(android.R.string.cancel), null)
           .setPositiveButton(getString(android.R.string.ok),((_, _) => {
-            val url_group = SharedPrefsUtil.getValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,"none")
-            val url = SharedPrefsUtil.getValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,"")
+            val url_group = SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,"none")
+            val url = SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,"")
             Log.d(TAG,"xiaoliu url_grop:"+url_group+":url:"+url)
             var delete_profiles = app.profileManager.getAllProfilesByUrl(url) match {
               case Some(profiles) =>
@@ -375,9 +377,11 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
               }
             })
 
-            SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false)
-            SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,"none");
-            SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,"");
+            SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false)
+            SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,"none");
+            SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,"");
+            SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,"")
+            SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,0)
 
             val first:Profile =  app.profileManager.getFirstProfile match {
               case Some(p) =>
@@ -400,21 +404,19 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
   }
 
   def refreshExperience(): Unit ={
-    val flag =SharedPrefsUtil.getValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false);
+    val flag =SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false);
     Log.d(TAG,"xiaoliu refresh experience:"+flag)
     if(!flag){
-      SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,"")
+      SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,"")
       select_experience.setTitle(getString(R.string.use_experience)+experince_extend)
       parent_experience.removePreference(remain_flow);
       parent_experience.removePreference(remain_time);
-      mHandler.removeCallbacksAndMessages(null)
     }else{
-      requestJson = SharedPrefsUtil.getValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,"")
+      requestJson = SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,"")
       Log.d(TAG,"xiaoliu requestJson:"+requestJson)
       if(!"".equals(requestJson)){
         var dataobj:JSONObject = new JSONObject(new JSONObject(requestJson).getString("data"))
         experince_extend = dataobj.getLong("card_number").toString
-        mHandler.post(syncRemainData)
       }
       select_experience.setTitle(getString(R.string.del_experience)+"("+experince_extend+")")
       parent_experience.addPreference(remain_flow);
@@ -425,6 +427,8 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
   }
 
   def refreshRemain(): Unit ={
+    remainFlow=SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,"")
+    remainTime=SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,0)
     remain_flow.setTitle(getString(R.string.remain_flow)+remainFlow)
     remain_time.setTitle(getString(R.string.remain_time)+remainTime+ getString(R.string.days))
   }
@@ -494,9 +498,11 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
         }
         if(new_profiels!=null&&new_profiels.length>0) {
           Log.d(TAG,"xiaoliu add ssr_beta:"+new_profiels.length)
-          SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,true)
-          SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,ssrsub.url_group);
-          SharedPrefsUtil.putValue(this.getActivity,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,ssrsub.url);
+          SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,true)
+          SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,ssrsub.url_group);
+          SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,ssrsub.url);
+          SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,remainFlow)
+          SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,remainTime)
           getActivity.runOnUiThread(new Runnable() {
             override def run(): Unit = {
               experince_extend = cardNumber.toString()
