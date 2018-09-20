@@ -50,6 +50,7 @@ import com.github.shadowsocks.Shadowsocks.TAG
 
 import scala.collection.mutable.ArrayBuffer
 import com.github.shadowsocks.flyrouter.R
+import top.bitleo.http.{NetUtils, ToolUtils}
 
 final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClickListener with ServiceBoundContext
   with View.OnClickListener with CreateNdefMessageCallback {
@@ -303,6 +304,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
     def onClick(v: View) {
       app.switchProfile(item.id)
       finish
+      startActivity(new Intent(ProfileManagerActivity.this,classOf[Shadowsocks]))
     }
 
     def onKey(v: View, keyCode: Int, event: KeyEvent) = if (event.getAction == KeyEvent.ACTION_DOWN) keyCode match {
@@ -887,25 +889,102 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
         else null
       case _ => null
     }
-
+    Log.d("ProfileManagerActity","xiaoliu:"+sharedStr);
     if (TextUtils.isEmpty(sharedStr)) return
-    val profiles_normal = Parser.findAll(sharedStr).toList
-    val profiles_ssr = Parser.findAll_ssr(sharedStr).toList
-    val profiles = profiles_ssr ::: profiles_normal
-    if (profiles.isEmpty) {
-      finish()
-      return
+
+    if(sharedStr.startsWith("sub://")){
+        var url = Parser.findUrlFromSub(sharedStr)
+        if(url!=null){
+          Log.d("ProfileManagerActity","xiaoliu findURL from sub:"+url);
+          getssrAndCreate(url)
+        }
+    }else{
+      val profiles_normal = Parser.findAll(sharedStr).toList
+      val profiles_ssr = Parser.findAll_ssr(sharedStr).toList
+      val profiles = profiles_ssr ::: profiles_normal
+      if (profiles.isEmpty) {
+        ToolUtils.syncToast(this,getString(R.string.no_profile_found))
+        finish()
+      }else{
+        val dialog = new AlertDialog.Builder(this, R.style.Theme_Material_Dialog_Alert)
+          .setTitle(R.string.add_profile_dialog)
+          .setPositiveButton(android.R.string.yes, ((_, _) =>
+            profiles.foreach(app.profileManager.createProfile)): DialogInterface.OnClickListener)
+          .setNeutralButton(R.string.dr, ((_, _) =>
+            profiles.foreach(app.profileManager.createProfile_dr)): DialogInterface.OnClickListener)
+          .setNegativeButton(android.R.string.no, ((_, _) => finish()): DialogInterface.OnClickListener)
+          .setMessage(profiles.mkString("\n"))
+          .create()
+        dialog.show()
+      }
     }
-    val dialog = new AlertDialog.Builder(this, R.style.Theme_Material_Dialog_Alert)
-      .setTitle(R.string.add_profile_dialog)
-      .setPositiveButton(android.R.string.yes, ((_, _) =>
-        profiles.foreach(app.profileManager.createProfile)): DialogInterface.OnClickListener)
-      .setNeutralButton(R.string.dr, ((_, _) =>
-        profiles.foreach(app.profileManager.createProfile_dr)): DialogInterface.OnClickListener)
-      .setNegativeButton(android.R.string.no, ((_, _) => finish()): DialogInterface.OnClickListener)
-      .setMessage(profiles.mkString("\n"))
-      .create()
-    dialog.show()
+
+  }
+
+  def getssrAndCreate(url:String): Unit ={
+    Utils.ThrowableFuture {
+      var delete_profiles = app.profileManager.getAllProfilesByUrl(url) match {
+        case Some(profiles) =>
+          profiles
+        case _ => null
+      }
+      var result = ""
+      val builder = new OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .writeTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+
+      val client = builder.build();
+
+      val request = new Request.Builder()
+        .url(url)
+        .build();
+
+      try {
+        val response = client.newCall(request).execute()
+        val code = response.code()
+        if (code == 200) {
+          val response_string = new String(Base64.decode(response.body().string, Base64.URL_SAFE))
+          Log.d("","xiaoliu open sub get response_string:"+response_string)
+          var limit_num = -1
+          var encounter_num = 0
+          if (response_string.indexOf("MAX=") == 0) {
+            limit_num = response_string.split("\\n")(0).split("MAX=")(1).replaceAll("\\D+","").toInt
+          }
+          var profiles_ssr = Parser.findAll_ssr(response_string)
+          profiles_ssr = scala.util.Random.shuffle(profiles_ssr)
+          if(profiles_ssr==null){
+            ToolUtils.asyncToast(this,getString(R.string.no_profile_found))
+            throw new Exception(getString(R.string.ssrsub_error, code: Integer))
+          }else{
+            profiles_ssr.foreach((profile: Profile) => {
+              profile.url = url
+              if (encounter_num < limit_num && limit_num != -1 || limit_num == -1) {
+                val result = app.profileManager.createProfile_sub(profile)
+                if (result != 0) {
+                  delete_profiles = delete_profiles.filter(_.id != result)
+                }
+              }
+              encounter_num += 1
+            })
+
+            delete_profiles.foreach((profile: Profile) => {
+              if (profile.url == url) {
+                app.profileManager.delProfile(profile.id)
+              }
+            })
+            ToolUtils.asyncToast(this,getString(R.string.sub_success))
+          }
+        } else throw new Exception(getString(R.string.ssrsub_error, code: Integer))
+        response.body().close()
+      } catch {
+        case e: IOException =>
+          result = getString(R.string.ssrsub_error, e.getMessage)
+      }
+      finish()
+      startActivity(new Intent(ProfileManagerActivity.this,classOf[ProfileManagerActivity]))
+
+    }
   }
 
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
@@ -944,6 +1023,9 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
         }
       }
   }
+
+
+
 
   override def onStart() {
     super.onStart()

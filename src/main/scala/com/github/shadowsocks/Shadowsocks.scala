@@ -394,18 +394,6 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
     ToolUtils.requestPermissionsReadPhoneState(this);
 
 
-
-    var intent:Intent = getIntent();
-    val uri = intent.getData
-    if (uri != null) {
-      val name = uri.getQueryParameter("name")
-      val scheme = uri.getScheme
-      val host = uri.getHost
-      val port = uri.getPort + ""
-      val path = uri.getPath
-      val query = uri.getQuery
-      Log.d(TAG,"获得的数据name=" + name + "/r" + "scheme" + scheme + "/r" + "host" + "host" + host + "/r" + "port" + port + "/r" + "path" + path + "/r" + "query" + query)
-    }
   }
 
   private def hideCircle() {

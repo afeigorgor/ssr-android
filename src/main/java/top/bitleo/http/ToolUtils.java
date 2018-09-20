@@ -2,13 +2,19 @@ package top.bitleo.http;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
-import android.telephony.TelephonyManager;
+import android.graphics.Bitmap;
 import android.widget.Toast;
 import com.github.shadowsocks.AESOperator;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.WHITE;
 
 
 public class ToolUtils {
@@ -91,6 +97,38 @@ public class ToolUtils {
                 Toast.makeText(getActivity,msg, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    public static void syncToast(final Activity getActivity, final String msg){
+        Toast.makeText(getActivity,msg, Toast.LENGTH_SHORT).show();
+    }
+
+    //生成二维码
+    public static Bitmap createBitmap(String str,int width,int height){
+        Bitmap bitmap = null;
+        BitMatrix matrix = null;
+        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+        try {
+            matrix = multiFormatWriter.encode(str, BarcodeFormat.QR_CODE, width, height);
+
+            int[] pixels = new int[width * height];
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    if (matrix.get(x, y)) {
+                        pixels[y * width + x] = BLACK;
+                    }else{
+                        pixels[y * width + x] = WHITE;
+                    }
+                }
+            }
+            bitmap = Bitmap.createBitmap(width, height,Bitmap.Config.RGB_565);
+            bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        } catch (WriterException e){
+            e.printStackTrace();
+        } catch (IllegalArgumentException iae){ // ?
+            return null;
+        }
+        return bitmap;
     }
 
 }

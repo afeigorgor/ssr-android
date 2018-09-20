@@ -221,11 +221,13 @@
   <!-- status -->
   <string name="sent">Sent:</string>
   <string name="received">Received:</string>
+
   <string name="faild">request faild</string>
   <string name="success">request success</string>
   <string name="sub_success">update subscription success</string>
   <string name="card_number_title">Card number</string>
   <string name="activation_code_title">Activation code</string>
+  <string name="no_profile_found">Do not find a  valid profile</string>
 
 
 </resources>

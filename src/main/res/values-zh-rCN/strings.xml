@@ -217,5 +217,6 @@
   <string name="sub_success">订阅更新成功</string>
   <string name="card_number_title">输入卡号</string>
   <string name="activation_code_title">输入激活码</string>
+  <string name="no_profile_found">未找到有效配置文件</string>
 
 </resources>

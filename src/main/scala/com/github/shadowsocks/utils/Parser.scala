@@ -50,11 +50,18 @@ object Parser {
   private val decodedPattern = "(?i)^((.+?)(-auth)??:(.*)@(.+?):(\\d+?))$".r
 
   private val pattern_ssr = "(?i)ssr://([A-Za-z0-9_=-]+)".r
+  private val pattern_sub = "(?i)sub://([A-Za-z0-9_=-]+)".r
   private val decodedPattern_ssr = "(?i)^((.+):(\\d+?):(.*):(.+):(.*):([^/]+))".r
   private val decodedPattern_ssr_obfsparam = "(?i)[?&]obfsparam=([A-Za-z0-9_=-]*)".r
   private val decodedPattern_ssr_remarks = "(?i)[?&]remarks=([A-Za-z0-9_=+-]*)".r //原来没有+号进行过滤
   private val decodedPattern_ssr_protocolparam = "(?i)[?&]protoparam=([A-Za-z0-9_=-]*)".r
   private val decodedPattern_ssr_groupparam = "(?i)[?&]group=([A-Za-z0-9_=+-]*)".r
+
+  def findUrlFromSub(data:CharSequence) = pattern_sub.findFirstMatchIn(if(data==null)""else data) match {
+    case Some(sub_url)=>
+      new String(Base64.decode(sub_url.group(1).replaceAll("=", ""), Base64.URL_SAFE), "UTF-8")
+    case _ => null
+  }
 
   def findAll(data: CharSequence) = pattern.findAllMatchIn(if (data == null) "" else data).map(m => try
     decodedPattern.findFirstMatchIn(new String(Base64.decode(m.group(1), Base64.NO_PADDING), "UTF-8")) match {

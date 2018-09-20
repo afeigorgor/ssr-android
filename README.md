@@ -14,3 +14,4 @@ ps编译出来的apk打开直接闪退，
 如果原因是说找不到资源文件， android.content.res.Resources$NotFoundException: Drawable in.zhaoj.shadowsocksrr:drawable/abc_vector_test with resource ID #0x7f020052
 请清空target目录 下的文件 重新编译
 
+rm -rf ~/.android/sbt/exploded-aars/  上面那个原因仍没法解决，可以用这个命令把编译依赖的缓存包清空，可解决大多找不到依赖的库类问题
