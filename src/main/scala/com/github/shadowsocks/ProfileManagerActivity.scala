@@ -60,6 +60,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
 
     var item: Profile = _
     private val text = itemView.findViewById(android.R.id.text1).asInstanceOf[CheckedTextView]
+    private val infoBtn = itemView.findViewById(R.id.info)
     itemView.setOnClickListener(this)
     itemView.setOnKeyListener(this)
 
@@ -105,7 +106,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
 //      })
 //    }
     {
-      val infoBtn = itemView.findViewById(R.id.info)
+
       infoBtn.setOnClickListener(_ => {
         app.switchProfile(item.id)
         startActivityForResult(new Intent(ProfileManagerActivity.this,classOf[ShadowsocksInfoActivity]),100)
@@ -298,6 +299,11 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
       } else {
         text.setChecked(false)
         if (selectedItem eq this) selectedItem = null
+      }
+      if(item.url!=null&&(!TextUtils.isEmpty(item.url))){
+        infoBtn.setVisibility(View.INVISIBLE)
+      }else{
+        infoBtn.setVisibility(View.VISIBLE)
       }
     }
 

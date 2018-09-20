@@ -18,7 +18,7 @@ class QuickToggleShortcut extends Activity with ServiceBoundContext {
           .putExtra(Intent.EXTRA_SHORTCUT_INTENT, new Intent(this, classOf[QuickToggleShortcut]))
           .putExtra(Intent.EXTRA_SHORTCUT_NAME, getString(R.string.quick_toggle))
           .putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
-            Intent.ShortcutIconResource.fromContext(this, R.mipmap.ic_launcher)))
+            Intent.ShortcutIconResource.fromContext(this, R.mipmap.logo)))
         finish()
       case _ =>
         attachService()

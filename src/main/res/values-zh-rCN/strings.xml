@@ -214,9 +214,10 @@
   <string name="received">接收:</string>
   <string name="faild">请求失败</string>
   <string name="success">请求成功</string>
-  <string name="sub_success">订阅更新成功</string>
+  <string name="sub_success">成功更新订阅</string>
   <string name="card_number_title">输入卡号</string>
   <string name="activation_code_title">输入激活码</string>
   <string name="no_profile_found">未找到有效配置文件</string>
 
+  <string name="main_title">选择线路</string>
 </resources>

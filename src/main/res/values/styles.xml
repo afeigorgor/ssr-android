@@ -29,6 +29,7 @@
     </style>
 
     <style name="Theme.Material.Dialog" parent="Theme.Material.DialogBase">
+        <!--<item name="android:windowBackground">@color/material_accent_700</item>-->
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 

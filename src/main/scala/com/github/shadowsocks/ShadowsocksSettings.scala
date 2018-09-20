@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit
 import android.preference.{Preference, PreferenceFragment, PreferenceGroup, SwitchPreference}
 import android.support.v7.app.AlertDialog
 import android.app.{Activity, ProgressDialog}
+import android.text.TextUtils
 import android.view.View
 import android.widget._
 import com.github.shadowsocks.ShadowsocksApplication.app
@@ -276,11 +277,15 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
           .setNegativeButton(getString(android.R.string.cancel), null)
           .setPositiveButton(getString(android.R.string.ok),((_, _) => {
 
-            var cardNumber = card_number.getText().toString.toLong;
-            var activationCode = activation_code.getText();
+            var cardNumber = card_number.getText().toString;
+            var cl:Long= 0
+            if(!TextUtils.isEmpty(cardNumber)){
+              cl=cardNumber.toLong
+            }
+            var activationCode = activation_code.getText().toString;
             var imei = SystemUtil.getIMEI(this.getActivity);
             var version =SystemUtil.getSystemVersion();
-            var jsonString = ToolUtils.getPackgeJson(version,imei,cardNumber,activationCode.toString());
+            var jsonString = ToolUtils.getPackgeJson(version,imei,cl,activationCode);
             Log.d(TAG, "xiaoliu request :"+jsonString)
             requestJson = jsonString
             SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_JSON,jsonString)
@@ -298,7 +303,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
                     remainFlow = dataobj.getString("remain")
                     remainTime = dataobj.getInt("effective_time")
                     if(url!=null){
-                      refreshSSRURL(url,cardNumber)
+                      refreshSSRURL(url,cl)
                     }else{
                       Log.d(this.getClass.getName,"xiaoliu the response card url is null")
                     }
@@ -316,7 +321,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
                           remainFlow = new_dataobj.getString("remain")
                           remainTime = new_dataobj.getInt("effective_time")
                           if(new_url!=null){
-                            refreshSSRURL(new_url,cardNumber)
+                            refreshSSRURL(new_url,cl)
                           }else{
                             Log.d(this.getClass.getName,"xiaoliu the response card url is null")
                           }

@@ -228,6 +228,7 @@
   <string name="card_number_title">Card number</string>
   <string name="activation_code_title">Activation code</string>
   <string name="no_profile_found">Do not find a  valid profile</string>
+  <string name="main_title">Select NAT</string>
 
 
 </resources>
