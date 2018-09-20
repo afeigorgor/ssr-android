@@ -409,7 +409,8 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
 
   private class SSRSubAdapter extends RecyclerView.Adapter[SSRSubViewHolder] {
     var profiles = new ArrayBuffer[SSRSub]
-    profiles ++= app.ssrsubManager.getAllSSRSubs.getOrElse(List.empty[SSRSub])
+    profiles ++= app.ssrsubManager.getAllSSRSubs.getOrElse(List.empty[SSRSub]).filterNot(_.url==SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,""))
+//    profiles ++= app.ssrsubManager.getAllSSRSubs.getOrElse(List.empty[SSRSub])
 
     def getItemCount = profiles.length
 
@@ -540,6 +541,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
 
     val intent = getIntent
     if (intent != null) handleShareIntent(intent)
+
   }
 
   def initFab() {
@@ -569,6 +571,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
   override def onResume() {
     super.onResume()
     updateNfcState()
+    refreshProfile()
   }
 
   override def onNewIntent(intent: Intent) {
@@ -688,7 +691,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
             ssrsubAdapter.notifyDataSetChanged()
           }): DialogInterface.OnClickListener)
           .setNeutralButton(R.string.ssrsub_remove_tip_delete,  ((_, _) => {
-            var delete_profiles = app.profileManager.getAllProfilesByGroup(viewHolder.asInstanceOf[SSRSubViewHolder].item.url_group) match {
+            var delete_profiles = app.profileManager.getAllProfilesByUrl(viewHolder.asInstanceOf[SSRSubViewHolder].item.url) match {
               case Some(profiles) =>
                 profiles
               case _ => null
@@ -742,7 +745,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
             case Some(ssrsubs) =>
               ssrsubs.foreach((ssrsub: SSRSub) => {
 
-                  var delete_profiles = app.profileManager.getAllProfilesByGroup(ssrsub.url_group) match {
+                  var delete_profiles = app.profileManager.getAllProfilesByUrl(ssrsub.url) match {
                     case Some(profiles) =>
                       profiles
                     case _ => null
@@ -798,7 +801,6 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
           }
 
           handler.post(() => testProgressDialog.dismiss)
-
           finish()
           startActivity(new Intent(getIntent()))
         }
@@ -921,9 +923,9 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
 
   }
 
-  def getssrAndCreate(url:String): Unit ={
+  def getssrAndCreate(share_url:String): Unit ={
     Utils.ThrowableFuture {
-      var delete_profiles = app.profileManager.getAllProfilesByUrl(url) match {
+      var delete_profiles = app.profileManager.getAllProfilesByUrl(share_url) match {
         case Some(profiles) =>
           profiles
         case _ => null
@@ -937,7 +939,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
       val client = builder.build();
 
       val request = new Request.Builder()
-        .url(url)
+        .url(share_url)
         .build();
 
       try {
@@ -957,8 +959,26 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
             ToolUtils.asyncToast(this,getString(R.string.no_profile_found))
             throw new Exception(getString(R.string.ssrsub_error, code: Integer))
           }else{
+            val profiles_ssr_group = Parser.findAll_ssr(response_string).toList
+            val ssrsub = new SSRSub {
+              url = share_url;
+              url_group = profiles_ssr_group(0).url_group
+            }
+            handler.post(new Runnable {
+              override def run(): Unit = {
+                var ssrSub_find:SSRSub = app.ssrsubManager.getSSRSubByUrl(ssrsub.url) match {
+                  case Some(s)=>
+                    s
+                  case None=>null
+                };
+                if(ssrSub_find!=null){
+                  app.ssrsubManager.delSSRSub(ssrSub_find.id)
+                }
+                 app.ssrsubManager.createSSRSub(ssrsub)
+              }
+            })
             profiles_ssr.foreach((profile: Profile) => {
-              profile.url = url
+              profile.url = share_url
               if (encounter_num < limit_num && limit_num != -1 || limit_num == -1) {
                 val result = app.profileManager.createProfile_sub(profile)
                 if (result != 0) {
@@ -969,7 +989,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
             })
 
             delete_profiles.foreach((profile: Profile) => {
-              if (profile.url == url) {
+              if (profile.url == share_url) {
                 app.profileManager.delProfile(profile.id)
               }
             })
@@ -1016,15 +1036,17 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
 
       }else if(requestCode==100 && resultCode==1002){
         Log.e("ProfileManagerActivity", "xiaoliu res")
-        if(profilesAdapter!=null){
-          profilesAdapter.profiles.clear();
-          profilesAdapter.profiles ++= app.profileManager.getAllProfiles.getOrElse(List.empty[Profile])
-          profilesAdapter.notifyDataSetChanged()
-        }
+        refreshProfile()
       }
   }
 
-
+  def refreshProfile(): Unit ={
+    if(profilesAdapter!=null){
+      profilesAdapter.profiles.clear();
+      profilesAdapter.profiles ++= app.profileManager.getAllProfiles.getOrElse(List.empty[Profile])
+      profilesAdapter.notifyDataSetChanged()
+    }
+  }
 
 
   override def onStart() {

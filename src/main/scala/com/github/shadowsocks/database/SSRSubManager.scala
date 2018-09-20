@@ -41,6 +41,8 @@ package com.github.shadowsocks.database
 
 import android.util.Log
 import com.github.shadowsocks.ShadowsocksApplication.app
+import com.github.shadowsocks.SharedPrefsUtil
+import top.bitleo.http.ToolUtils
 
 object SSRSubManager {
   private final val TAG = "SSRSubManager"
@@ -112,6 +114,27 @@ class SSRSubManager(dbHelper: DBHelper) {
     } catch {
       case ex: Exception =>
         Log.e(TAG, "getAllSSRSubs", ex)
+        app.track(ex)
+        None
+    }
+  }
+  def getSSRSubByUrl(url :String) = {
+    try {
+      import scala.collection.JavaConversions._
+      var list:List[SSRSub] =dbHelper.ssrsubDao.query(dbHelper.ssrsubDao.queryBuilder.prepare).toList
+      var index:Int = -1
+      list.foreach((ssr:SSRSub)=>{
+        if(ssr.url==url){
+          index = list.indexOf(ssr)
+          Log.d(TAG,"find one card:"+index)
+        }
+      })
+      if(index>=0){
+        Option(list.get(index))
+      }else None
+    } catch {
+      case ex: Exception =>
+        Log.e(TAG, "getSSRSubByUrl", ex)
         app.track(ex)
         None
     }

@@ -377,6 +377,12 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
               }
             })
 
+             app.ssrsubManager.getAllSSRSubs.get.foreach(s=>{
+               if(s.url==url){
+                 app.ssrsubManager.delSSRSub(s.id)
+               }
+             })
+
             SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false)
             SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,"none");
             SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,"");
@@ -506,6 +512,7 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
           getActivity.runOnUiThread(new Runnable() {
             override def run(): Unit = {
               experince_extend = cardNumber.toString()
+              app.ssrsubManager.createSSRSub(ssrsub);
               refreshExperience()
               app.switchProfile(new_profiels.head.id)
               setProfile(new_profiels.head)

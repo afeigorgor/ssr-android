@@ -262,17 +262,17 @@ class ProfileManager(dbHelper: DBHelper) {
     }
   }
 
-  def getAllProfilesByGroup(group:String): Option[List[Profile]] = {
-    try {
-      import scala.collection.JavaConversions._
-      Option(dbHelper.profileDao.query(dbHelper.profileDao.queryBuilder.where().eq("url_group", group).prepare).toList)
-    } catch {
-      case ex: Exception =>
-        Log.e(TAG, "getAllProfiles", ex)
-        app.track(ex)
-        None
-    }
-  }
+//  def getAllProfilesByGroup(group:String): Option[List[Profile]] = {
+//    try {
+//      import scala.collection.JavaConversions._
+//      Option(dbHelper.profileDao.query(dbHelper.profileDao.queryBuilder.where().eq("url_group", group).prepare).toList)
+//    } catch {
+//      case ex: Exception =>
+//        Log.e(TAG, "getAllProfiles", ex)
+//        app.track(ex)
+//        None
+//    }
+//  }
   def getAllProfilesByUrl(url:String): Option[List[Profile]] = {
     try {
       import scala.collection.JavaConversions._

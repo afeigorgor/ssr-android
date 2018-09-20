@@ -44,7 +44,7 @@ class SSRSubUpdateJob() extends Job {
           var result = 1
           ssrsubs.foreach((ssrsub: SSRSub) => {
 
-              var delete_profiles = app.profileManager.getAllProfilesByGroup(ssrsub.url_group) match {
+              var delete_profiles = app.profileManager.getAllProfilesByUrl(ssrsub.url) match {
                 case Some(profiles) =>
                   profiles
                 case _ => null
@@ -74,6 +74,7 @@ class SSRSubUpdateJob() extends Job {
                   var profiles_ssr = Parser.findAll_ssr(response_string)
                   profiles_ssr = scala.util.Random.shuffle(profiles_ssr)
                   profiles_ssr.foreach((profile: Profile) => {
+                    profile.url=ssrsub.url
                     if (encounter_num < limit_num && limit_num != -1 || limit_num == -1) {
                       val result_id = app.profileManager.createProfile_sub(profile)
                       if (result_id != 0) {
@@ -84,7 +85,7 @@ class SSRSubUpdateJob() extends Job {
                   })
 
                   delete_profiles.foreach((profile: Profile) => {
-                    if (profile.id != app.profileId) {
+                    if (profile.url==ssrsub.url) {
                       app.profileManager.delProfile(profile.id)
                     }
                   })
