@@ -21,6 +21,7 @@ local.sbt
 *.iws
 .idea/
 out/
+.DS_Store/
 .d
 
 #NDK
