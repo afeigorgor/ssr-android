@@ -2,14 +2,18 @@ package top.bitleo.http;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.widget.Toast;
 import com.github.shadowsocks.AESOperator;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,13 +50,33 @@ public class ToolUtils {
         }
         return object.toString();
     }
+
+    public static String getCheckUpdateJson(String version,String imei){
+        JSONObject object = new JSONObject();
+        try {
+            JSONObject object1=new JSONObject();
+            object1.put("version",version);
+            object1.put("platform","android");
+            object1.put("imei",imei);
+            object.put("commonData",object1);
+        } catch (JSONException e) {
+            return null;
+        }
+        return object.toString();
+    }
+
     public static String getRecordJson(String requestJson,String ping,String ipOrDomain){
 
         try {
             JSONObject postObject =new JSONObject(requestJson);
+            postObject.remove("activation_code");
             JSONObject dataobj = new JSONObject(postObject.getString("data"));
-            dataobj.put("ping",ping);
-            dataobj.put("ip_or_damain",ipOrDomain);
+            JSONArray array = new JSONArray();
+            JSONObject pingObj = new JSONObject();
+            pingObj.put("ping",ping);
+            pingObj.put("ip_or_damain",ipOrDomain);
+            array.put(pingObj);
+            dataobj.put("ping_list",array);
             postObject.put("data",dataobj);
             return postObject.toString();
 
@@ -131,4 +155,53 @@ public class ToolUtils {
         return bitmap;
     }
 
+
+    /**
+     * 获取文件保存路径 sdcard根目录/download/文件名称
+     * @param fileUrl
+     * @return
+     */
+    public static String getSaveFilePath(String fileUrl){
+        String fileName=fileUrl.substring(fileUrl.lastIndexOf("/")+1,fileUrl.length());//获取文件名称
+        String newFilePath= Environment.getExternalStorageDirectory() + "/Download/"+fileName;
+        return newFilePath;
+    }
+
+    /**
+     * 获取APP版本号
+     * @param ctx
+     * @return
+     */
+    public static int getVersionCode(Context ctx) {
+        // 获取packagemanager的实例
+        int version = 0;
+        try {
+            PackageManager packageManager = ctx.getPackageManager();
+            //getPackageName()是你当前程序的包名
+            PackageInfo packInfo = packageManager.getPackageInfo(ctx.getPackageName(), 0);
+            version = packInfo.versionCode;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return version;
+    }
+
+    /**
+     * 获取APP版本号
+     * @param ctx
+     * @return
+     */
+    public static String getVersionName(Context ctx) {
+        // 获取packagemanager的实例
+        String versionName = "";
+        try {
+            PackageManager packageManager = ctx.getPackageManager();
+            //getPackageName()是你当前程序的包名
+            PackageInfo packInfo = packageManager.getPackageInfo(ctx.getPackageName(), 0);
+            versionName = packInfo.versionName;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return versionName;
+    }
 }

@@ -14,7 +14,7 @@ gen_*
 *.class
 *.o
 local.sbt
-.DS_Store/
+.DS_Store
 #Intellij IDEA
 *.iml
 *.ipr

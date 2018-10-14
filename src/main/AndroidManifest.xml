@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools" package="com.github.shadowsocks.flyrouter"
-          android:versionCode="10"
-          android:versionName="1.0.0">
+          android:versionCode="11"
+          android:versionName="1.0.1">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -23,7 +23,7 @@
                   android:required="false"/>
 
     <uses-sdk
-            android:minSdkVersion="23"
+            android:minSdkVersion="21"
             android:targetSdkVersion="25"/>
 
     <application
@@ -225,6 +225,16 @@
                   android:process=":bg"/>
         <receiver android:name="com.evernote.android.job.JobBootReceiver"
                   android:process=":bg"/>
+
+        <provider
+                android:name="android.support.v4.content.FileProvider"
+                android:authorities="top.bitleo.checkupdate.fileprovider"
+                android:grantUriPermissions="true"
+                android:exported="false">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

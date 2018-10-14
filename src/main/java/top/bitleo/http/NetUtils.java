@@ -19,7 +19,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
 import okhttp3.*;
 
 /**
@@ -28,9 +27,14 @@ import okhttp3.*;
 
 public class NetUtils {
 
-    public static final String ACTIVE_USER ="https://fly.517.bz/experience/activateuser/";
-    public static final String SELECT_INFO ="https://fly.517.bz/experience/selectinfo/";
-    public static final String RECORD_PING ="https://fly.517.bz/experience/record_ping/";
+    public static final String ACTIVE_USER ="https://s.vpnwifirouter.com/experience/activateuser/";
+    public static final String SELECT_INFO ="https://s.vpnwifirouter.com/experience/selectinfo/";
+    public static final String RECORD_PING ="https://s.vpnwifirouter.com/experience/record_ping/";
+    public static final String APP_UPDATE ="https://s.vpnwifirouter.com/experience/mobileUserAppUp/";
+    public static final String ACTIVE_USER_OTHER ="https://ff.moveqq.com/experience/activateuser/";
+    public static final String SELECT_INFO_OTHER ="https://ff.moveqq.com/experience/selectinfo/";
+    public static final String RECORD_PING_OTHER ="https://ff.moveqq.com/experience/record_ping/";
+    public static final String APP_UPDATE_OTHER ="https://ff.moveqq.com/experience/mobileUserAppUp/";
 
     private static final byte[] LOCKER = new byte[0];
     private static NetUtils mInstance;

@@ -45,8 +45,9 @@ import java.util
 import java.util.{GregorianCalendar, Locale}
 
 import android.app.backup.BackupManager
-import android.app.{Activity, ProgressDialog}
+import android.app.{Activity, AlertDialog, ProgressDialog}
 import android.content._
+import android.content.pm.{PackageInfo, PackageManager}
 import android.graphics.Typeface
 import android.net.VpnService
 import android.os._
@@ -66,12 +67,14 @@ import com.github.shadowsocks.utils._
 import com.github.shadowsocks.job.SSRSubUpdateJob
 import com.github.shadowsocks.ShadowsocksApplication.app
 import okhttp3.{Call, Response}
-import top.bitleo.http.{NetUtils, ToolUtils}
+import top.bitleo.http.{NetUtils, SystemUtil, ToolUtils}
 import com.github.shadowsocks.flyrouter.R
 import org.json.JSONObject
 
 import scala.util.Random
 import android.net.Uri
+import com.ansen.http.net.HTTPCaller
+import io.github.lizhangqu.coreprogress.ProgressUIListener
 
 object Typefaces {
   def get(c: Context, assetPath: String): Typeface = {
@@ -113,6 +116,8 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
   var progressDialog: ProgressDialog = _
   var state = State.STOPPED
   var currentProfile = new Profile
+  val perms = Array(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+   val PERMS_REQUEST_CODE = 200
 
   // Services
   private val callback = new IShadowsocksServiceCallback.Stub {
@@ -393,8 +398,146 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
 
     ToolUtils.requestPermissionsReadPhoneState(this);
 
+    //开始检测有没版本更新
+    import android.content.pm.PackageManager
+    import android.os.Build
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1 && PackageManager.PERMISSION_GRANTED != checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) requestPermissions(perms, PERMS_REQUEST_CODE)
+    else checkUpdate();
+
 
   }
+
+  private def checkUpdate(): Unit ={
+    var imei = SystemUtil.getIMEI(this);
+    var pm:PackageManager = this.getPackageManager();//context为当前Activity上下文
+    var pi:PackageInfo = pm.getPackageInfo(this.getPackageName(), 0);
+
+    var requestJson  = ToolUtils.getCheckUpdateJson(pi.versionName,imei);
+    if(!"".equals(requestJson)) {
+      var encodeJson = AESOperator.getInstance().encrypt(requestJson)
+      NetUtils.getInstance().postDataAsynToNet(NetUtils.APP_UPDATE, encodeJson, new NetUtils.MyNetCall {
+        override def success(call: Call, response: Response): Unit = {
+          var body = response.body().string()
+          Log.d(TAG, "xiaoliu checkUpdate success:" + body)
+          if (body != null) {
+            var json = ToolUtils.parseToJson(body)
+            var code = json.getInt("code")
+            if (code == 200) {
+              var dataobj: JSONObject = new JSONObject(json.getString("data"))
+              var fileurl = dataobj.getString("fileUrl")
+              if(fileurl!=null){
+                showUpdaloadDialog(fileurl);
+              }
+            }
+          }
+        }
+
+        override def failed(call: Call, e: IOException): Unit = {
+
+        }
+      })
+    }
+  }
+
+  import android.content.DialogInterface
+  import com.github.shadowsocks.flyrouter.R
+
+  /**
+    * 显示更新对话框
+    *
+    * @param downloadUrl
+    */
+  private def showUpdaloadDialog(downloadUrl: String): Unit = { // 这里的属性可以一直设置，因为每次设置后返回的是一个builder对象
+    val builder = new AlertDialog.Builder(this)
+    // 设置提示框的标题
+    builder.setTitle("版本升级").setIcon(R.mipmap.logo).// 设置提示框的图标
+      setMessage("发现新版本！请及时更新").// 设置要显示的信息
+      setPositiveButton("确定", new DialogInterface.OnClickListener() { // 设置确定按钮
+    override def onClick(dialog: DialogInterface, which: Int): Unit =
+    {
+      startUpload(downloadUrl) //下载最新的版本程序
+
+    }
+  }
+
+  ).setNegativeButton("取消", null) //设置取消按钮,null是什么都不做，并关闭对话框
+
+    val alertDialog: AlertDialog = builder.create
+    // 显示对话框
+    alertDialog.show
+}
+
+
+  import android.app.ProgressDialog
+  import android.widget.Toast
+
+  /**
+    * 开始下载
+    *
+    * @param downloadUrl 下载url
+    */
+  private def startUpload(downloadUrl: String): Unit = {
+    progressDialog = new ProgressDialog(this)
+    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+    progressDialog.setMessage("正在下载新版本")
+    progressDialog.setCancelable(false) //不能手动取消下载进度对话框
+
+    val fileSavePath = ToolUtils.getSaveFilePath(downloadUrl)
+    HTTPCaller.getInstance.downloadFile(downloadUrl, fileSavePath, null, new ProgressUIListener() {
+      override def onUIProgressStart(totalBytes: Long): Unit = { //下载开始
+        progressDialog.setMax(totalBytes.toInt)
+        progressDialog.show
+      } //更新进度
+      override def onUIProgressChanged(numBytes: Long, totalBytes: Long, percent: Float, speed: Float): Unit = {
+        progressDialog.setProgress(numBytes.toInt)
+      }
+
+      override def onUIProgressFinish(): Unit = { //下载完成
+        Toast.makeText(getApplicationContext, "下载完成", Toast.LENGTH_LONG).show()
+        progressDialog.dismiss
+        openAPK(fileSavePath)
+      }
+    })
+  }
+
+  import android.content.Intent
+  import android.net.Uri
+  import android.os.Build
+  import android.support.v4.content.FileProvider
+  import java.io.File
+
+  /**
+    * 下载完成安装apk
+    *
+    * @param fileSavePath
+    */
+  private def openAPK(fileSavePath: String): Unit = {
+    val file:File = new File(fileSavePath)
+    val intent = new Intent(Intent.ACTION_VIEW)
+    var data: Uri = null
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { //判断版本大于等于7.0
+      // "com.ansen.checkupdate.fileprovider"即是在清单文件中配置的authorities
+      // 通过FileProvider创建一个content类型的Uri
+      data = FileProvider.getUriForFile(this, "top.bitleo.checkupdate.fileprovider", file)
+      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // 给目标应用一个临时授权
+
+    }
+    else data = Uri.fromFile(file)
+    intent.setDataAndType(data, "application/vnd.android.package-archive")
+    startActivity(intent)
+  }
+
+  import android.content.pm.PackageManager
+
+  override  def onRequestPermissionsResult(permsRequestCode: Int, permissions: Array[String], grantResults: Array[Int]): Unit = {
+    permsRequestCode match {
+      case PERMS_REQUEST_CODE =>
+        val storageAccepted = grantResults(0) == PackageManager.PERMISSION_GRANTED
+        if (storageAccepted) checkUpdate();
+    }
+  }
+
+
 
   private def hideCircle() {
     try {
@@ -497,6 +640,7 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
               var remainTime = dataobj.getInt("effective_time")
               SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,remainFlow)
               SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,remainTime)
+              handler.post(()=>preferences.refreshExperience());
             }
           }
         }
