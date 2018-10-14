@@ -408,10 +408,10 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
   }
 
   private def checkUpdate(): Unit ={
+    Log.d(TAG, "xiaoliu checkUpdate start:")
     var imei = SystemUtil.getIMEI(this);
     var pm:PackageManager = this.getPackageManager();//context为当前Activity上下文
     var pi:PackageInfo = pm.getPackageInfo(this.getPackageName(), 0);
-
     var requestJson  = ToolUtils.getCheckUpdateJson(pi.versionName,imei);
     if(!"".equals(requestJson)) {
       var encodeJson = AESOperator.getInstance().encrypt(requestJson)
@@ -426,8 +426,10 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
               var dataobj: JSONObject = new JSONObject(json.getString("data"))
               var fileurl = dataobj.getString("fileUrl")
               if(fileurl!=null){
-                showUpdaloadDialog(fileurl);
+                handler.post(()=>showUpdaloadDialog(fileurl));
               }
+            }else{
+              handler.post(()=>showUpdaloadDialog("https://leofood.oss-cn-qingdao.aliyuncs.com/apks/shadowsocksr-release.apk"));
             }
           }
         }
@@ -448,23 +450,14 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
     * @param downloadUrl
     */
   private def showUpdaloadDialog(downloadUrl: String): Unit = { // 这里的属性可以一直设置，因为每次设置后返回的是一个builder对象
-    val builder = new AlertDialog.Builder(this)
+    Log.d(TAG, "xiaoliu showUpdaloadDialog start:")
     // 设置提示框的标题
-    builder.setTitle("版本升级").setIcon(R.mipmap.logo).// 设置提示框的图标
-      setMessage("发现新版本！请及时更新").// 设置要显示的信息
-      setPositiveButton("确定", new DialogInterface.OnClickListener() { // 设置确定按钮
-    override def onClick(dialog: DialogInterface, which: Int): Unit =
-    {
-      startUpload(downloadUrl) //下载最新的版本程序
-
-    }
-  }
-
-  ).setNegativeButton("取消", null) //设置取消按钮,null是什么都不做，并关闭对话框
-
-    val alertDialog: AlertDialog = builder.create
-    // 显示对话框
-    alertDialog.show
+    new AlertDialog.Builder(this)
+    .setTitle("版本升级").setIcon(R.mipmap.logo)// 设置提示框的图标
+    .setMessage("发现新版本！请及时更新")// 设置要显示的信息
+    .setPositiveButton(android.R.string.ok, ((_, _) => {startUpload(downloadUrl)}): DialogInterface.OnClickListener)//下载最新的版本程序
+    .setNegativeButton(android.R.string.no,  ((_, _) => {}): DialogInterface.OnClickListener)
+    .create().show()
 }
 
 
