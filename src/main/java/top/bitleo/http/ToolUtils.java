@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
 import com.github.shadowsocks.AESOperator;
+import com.github.shadowsocks.SharedPrefsUtil;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -26,24 +28,23 @@ public class ToolUtils {
     public static final String LOCAL_SAVE_BETA_KEY= "has_experience";
     public static final String LOCAL_BETA_URL_GROUP= "beta_url_group";
     public static final String LOCAL_BETA_URL= "beta_group";
-    public static final String LOCAL_BETA_JSON= "beta_json";
+    public static final String LOCAL_COMMON_DATA_JSON= "common_data_json";
+    public static final String LOCAL_CARD_INFO_JSON= "card_info_json";
     public static final String LOCAL_BETA_REMAIN_FLOW= "remain_flow";
     public static final String LOCAL_BETA_REMAIN_DATE= "remain_date";
     public static final String DEFUALT_PASS = "bypass-lan-china";
-    public static final boolean LOCAL_TEST =true;
-    public static  final  String TEST_SSR_URL= "https://s.vpnwifirouter.com/subscribe/rd4iYti-Z3vP6FuFK2fNK7ByaH6mpjTONqGXWhbGDvo";
-//    public static  final  String TEST_SSR_URL= "https://fly.517.bz/subscribe/kELwxznF-V-aAUQRSTEJ3RdkWg0fGkE5Wb3PC3ns0Go";
-    public static String getPackgeJson(String version,String imei,Long cardNumber,String activationCode){
+    public static final String COMMON_DATA_KEY = "commonData";
+    public static final String DATA_KEY = "data";
+
+
+    public static String getActiveJson(Context ctx){
         JSONObject object = new JSONObject();
+        String commonData = SharedPrefsUtil.getValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_COMMON_DATA_JSON,"");
+        String cardInfoData =  SharedPrefsUtil.getValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_CARD_INFO_JSON,"");
         try {
-            JSONObject object1=new JSONObject();
-            object1.put("version",version);
-            object1.put("platform","android");
-            object1.put("imei",imei);
+            JSONObject object1=new JSONObject(commonData);
             object.put("commonData",object1);
-            JSONObject object2 =new JSONObject();
-            object2.put("card_number",cardNumber);
-            object2.put("activation_code",activationCode);
+            JSONObject object2 =new JSONObject(cardInfoData);
             object.put("data",object2);
         } catch (JSONException e) {
             return null;
@@ -51,13 +52,11 @@ public class ToolUtils {
         return object.toString();
     }
 
-    public static String getCheckUpdateJson(String version,String imei){
+    public static String getCheckUpdateJson(Context ctx){
         JSONObject object = new JSONObject();
+        String commonData = SharedPrefsUtil.getValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_COMMON_DATA_JSON,"");
         try {
-            JSONObject object1=new JSONObject();
-            object1.put("version",version);
-            object1.put("platform","android");
-            object1.put("imei",imei);
+            JSONObject object1=new JSONObject(commonData);
             object.put("commonData",object1);
         } catch (JSONException e) {
             return null;
@@ -65,11 +64,30 @@ public class ToolUtils {
         return object.toString();
     }
 
+    public static String getSyncRemainDataJson(Context ctx){
+        return getActiveJson(ctx);
+    }
+
+
+    public static void requestPermissionsReadPhoneState(Activity activity){
+
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1){
+
+            int permissionCheck = activity.checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
+
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                activity.requestPermissions( new String[]{Manifest.permission.READ_PHONE_STATE}, 0);
+            } else {
+                //TODO
+            }
+        }
+
+    }
+
     public static String getRecordJson(String requestJson,String ping,String ipOrDomain){
 
         try {
             JSONObject postObject =new JSONObject(requestJson);
-            postObject.remove("activation_code");
             JSONObject dataobj = new JSONObject(postObject.getString("data"));
             JSONArray array = new JSONArray();
             JSONObject pingObj = new JSONObject();
@@ -77,6 +95,7 @@ public class ToolUtils {
             pingObj.put("ip_or_damain",ipOrDomain);
             array.put(pingObj);
             dataobj.put("ping_list",array);
+            dataobj.remove("activation_code");
             postObject.put("data",dataobj);
             return postObject.toString();
 
@@ -91,16 +110,6 @@ public class ToolUtils {
             return encodeString;
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    public static void requestPermissionsReadPhoneState(Activity activity){
-        int permissionCheck = activity.checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
-
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            activity.requestPermissions( new String[]{Manifest.permission.READ_PHONE_STATE}, 0);
-        } else {
-            //TODO
         }
     }
 
@@ -203,5 +212,49 @@ public class ToolUtils {
             e.printStackTrace();
         }
         return versionName;
+    }
+
+    /**
+     * 初始化公共数据，每次应用创建时调用
+     * @param ctx
+     */
+    public static   String initCommonData(Context ctx){
+        String version =getVersionName(ctx);
+        String platform = "android";
+        String systemVersion = SystemUtil.getSystemVersion();
+        String imei = SystemUtil.getIMEI(ctx);
+        JSONObject object1=new JSONObject();
+        try {
+            object1.put("version",version);
+            object1.put("platform",platform);
+            object1.put("systemVersion",systemVersion);
+            object1.put("imei",imei);
+            String json = object1.toString();
+            SharedPrefsUtil.putValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_COMMON_DATA_JSON,json);
+            return json;
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public  static  String savaCardNumberAndCode(Context ctx,Long cardNumber,String activationCode){
+        JSONObject object2 =new JSONObject();
+        try {
+            object2.put("card_number",cardNumber);
+            object2.put("activation_code",activationCode);
+            String json  = object2.toString();
+            SharedPrefsUtil.putValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_CARD_INFO_JSON,json);
+            return json;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public  static  void removeCardNumberAndCode(Context ctx){
+        SharedPrefsUtil.putValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_CARD_INFO_JSON,"");
     }
 }

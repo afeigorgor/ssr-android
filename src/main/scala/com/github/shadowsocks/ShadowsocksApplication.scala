@@ -65,6 +65,7 @@ import eu.chainfire.libsuperuser.Shell
 import scala.collection.mutable.ArrayBuffer
 import com.github.shadowsocks.flyrouter.R
 import com.github.shadowsocks.flyrouter.BuildConfig
+import top.bitleo.http.ToolUtils
 
 object ShadowsocksApplication {
   var app: ShadowsocksApplication = _
@@ -213,6 +214,9 @@ class ShadowsocksApplication extends Application {
 
     //初始化HTTPCaller类
     HTTPCaller.getInstance.setHttpConfig(httpConfig)
+
+
+
   }
 
   def refreshContainerHolder {
