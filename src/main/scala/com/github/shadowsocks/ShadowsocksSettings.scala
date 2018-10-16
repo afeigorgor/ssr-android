@@ -255,137 +255,31 @@ class ShadowsocksSettings extends PreferenceFragment with OnSharedPreferenceChan
             if(cl==0){
               ToolUtils.syncToast(getActivity,"卡号输入有误");
             }else{
-              var activationCode = activation_code.getText().toString;
+              val activationCode = activation_code.getText().toString;
               ToolUtils.savaCardNumberAndCode(app,cl,activationCode);
-              var jsonString = ToolUtils.getActiveJson(app);
+              val jsonString = ToolUtils.getActiveJson(app);
               Log.d(TAG, "xiaoliu request :"+jsonString)
-              var encodeString = ToolUtils.getAESEncode(jsonString);
-              NetUtils.getInstance().postDataAsynToNet(NetUtils.ACTIVE_USER,encodeString,new NetUtils.MyNetCall {
-                override def success(call: Call, response: Response): Unit = {
-                  var body =response.body().string()
-                  Log.d(TAG, "xiaoliu success:"+body)
-                  if(body!=null){
-                    var json = ToolUtils.parseToJson(body)
-                    var code =json.getInt("code")
-                    if(code==200){
-                      var dataobj:JSONObject = new JSONObject(json.getString("data"))
-                      var url = dataobj.getString("url")
-                      remainFlow = dataobj.getString("remain")
-                      remainTime = dataobj.getInt("effective_time")
-                      if(url!=null){
-                        refreshSSRURL(url,cl)
-                      }else{
-                        Log.d(this.getClass.getName,"xiaoliu the response card url is null")
-                      }
-                    }else if(code == -1){
-                      NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO,encodeString,new NetUtils.MyNetCall {
-                        override def success(call: Call, response: Response): Unit = {
-                          var new_body =response.body().string()
-                          Log.d(TAG, "xiaoliu syncRemainData success:"+new_body)
-                          if(new_body!=null){
-                            var new_json = ToolUtils.parseToJson(new_body)
-                            var new_code =new_json.getInt("code")
-                            if(new_code==200) {
-                              var new_dataobj: JSONObject = new JSONObject(new_json.getString("data"))
-                              var new_url = new_dataobj.getString("url")
-                              remainFlow = new_dataobj.getString("remain")
-                              remainTime = new_dataobj.getInt("effective_time")
-                              if(new_url!=null){
-                                refreshSSRURL(new_url,cl)
-                              }else{
-                                Log.d(this.getClass.getName,"xiaoliu the response card url is null")
-                              }
-                            }else if(new_code == -1){
-                              ToolUtils.asyncToast(getActivity,json.getString("msg"))
-                            }
-                          }
-                        }
-                        override def failed(call: Call, e: IOException): Unit = {
-                          Log.i(TAG, "xiaoliu failed"+e.getMessage)
-                          getActivity.runOnUiThread(new Runnable() {
-                            override def run(): Unit = {
-                              Toast.makeText(getActivity, getString(R.string.faild), Toast.LENGTH_SHORT).show()
-                            }
-                          })
-                        }
-                      })
-
-                    }
-
+              val encodeString = ToolUtils.getAESEncode(jsonString);
+              NetworkUtils.postActiveUser(encodeString,new NetworkUtils.ActiveUserNetCall {
+                override def activeSuccess(flow: String, time: Int, url: String): Unit = {
+                  remainFlow = flow
+                  remainTime = time
+                  if(url!=null){
+                    refreshSSRURL(url,cl)
+                  }else{
+                    Log.e(this.getClass.getName,"xiaoliu the response card url is null")
                   }
                 }
+                override def activeFailed(msg: String): Unit = {
+                  ToolUtils.asyncToast(getActivity,msg)
+                }
 
-                override def failed(call: Call, e: IOException): Unit = {
-                  Log.i(TAG, "xiaoliu active first failed"+e.getMessage)
-
-                  NetUtils.getInstance().postDataAsynToNet(NetUtils.ACTIVE_USER_OTHER,encodeString,new NetUtils.MyNetCall {
-                    override def success(call: Call, response: Response): Unit = {
-                      var body =response.body().string()
-                      Log.d(TAG, "xiaoliu success:"+body)
-                      if(body!=null){
-                        var json = ToolUtils.parseToJson(body)
-                        var code =json.getInt("code")
-                        if(code==200){
-                          var dataobj:JSONObject = new JSONObject(json.getString("data"))
-                          var url = dataobj.getString("url")
-                          remainFlow = dataobj.getString("remain")
-                          remainTime = dataobj.getInt("effective_time")
-                          if(url!=null){
-                            refreshSSRURL(url,cl)
-                          }else{
-                            Log.d(this.getClass.getName,"xiaoliu the response card url is null")
-                          }
-                        }else if(code == -1){
-                          NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO_OTHER,encodeString,new NetUtils.MyNetCall {
-                            override def success(call: Call, response: Response): Unit = {
-                              var new_body =response.body().string()
-                              Log.d(TAG, "xiaoliu syncRemainData success:"+new_body)
-                              if(new_body!=null){
-                                var new_json = ToolUtils.parseToJson(new_body)
-                                var new_code =new_json.getInt("code")
-                                if(new_code==200) {
-                                  var new_dataobj: JSONObject = new JSONObject(new_json.getString("data"))
-                                  var new_url = new_dataobj.getString("url")
-                                  remainFlow = new_dataobj.getString("remain")
-                                  remainTime = new_dataobj.getInt("effective_time")
-                                  if(new_url!=null){
-                                    refreshSSRURL(new_url,cl)
-                                  }else{
-                                    Log.d(this.getClass.getName,"xiaoliu the response card url is null")
-                                  }
-                                }else if(new_code == -1){
-                                  ToolUtils.asyncToast(getActivity,json.getString("msg"))
-                                }
-                              }
-                            }
-                            override def failed(call: Call, e: IOException): Unit = {
-                              Log.i(TAG, "xiaoliu all failed"+e.getMessage)
-                              getActivity.runOnUiThread(new Runnable() {
-                                override def run(): Unit = {
-                                  Toast.makeText(getActivity, getString(R.string.faild), Toast.LENGTH_SHORT).show()
-                                }
-                              })
-                            }
-                          })
-
-                        }
-
-                      }
-                    }
-
-                    override def failed(call: Call, e: IOException): Unit = {
-                      Log.i(TAG, "xiaoliu active all failed"+e.getMessage)
-                      getActivity.runOnUiThread(new Runnable() {
-                        override def run(): Unit = {
-                          Toast.makeText(getActivity, getString(R.string.faild), Toast.LENGTH_SHORT).show()
-                        }
-                      })
-                    }
-                  })
-
+                override def onException(exception: Exception): Unit = {
 
                 }
+
               })
+
 
 
 

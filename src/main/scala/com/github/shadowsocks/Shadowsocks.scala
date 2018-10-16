@@ -339,38 +339,7 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
                   }
                   Log.d(TAG,"xiaoliu ping requestJson:"+requestJson)
                   var encodePingValue = AESOperator.getInstance().encrypt(requestJson)
-                   NetUtils.getInstance().postDataAsynToNet(NetUtils.RECORD_PING,encodePingValue,new NetUtils.MyNetCall {
-                    override def success(call: Call, response: Response): Unit = {
-                      var body =response.body().string()
-                      Log.d(TAG, "xiaoliu ping request success:"+body)
-                      if(body != null){
-                        var json = ToolUtils.parseToJson(body)
-                        var code =json.getInt("code")
-                        if(code!=200) {
-
-                        }
-                      }
-                    }
-                    override def failed(call: Call, e: IOException): Unit = {
-                      Log.e(TAG, "xiaoliu ping  request first faild:")
-                      NetUtils.getInstance().postDataAsynToNet(NetUtils.RECORD_PING_OTHER,encodePingValue,new NetUtils.MyNetCall {
-                        override def success(call: Call, response: Response): Unit = {
-                          var body =response.body().string()
-                          Log.d(TAG, "xiaoliu ping request  success:"+body)
-                          if(body != null){
-                            var json = ToolUtils.parseToJson(body)
-                            var code =json.getInt("code")
-                            if(code!=200) {
-
-                            }
-                          }
-                        }
-                        override def failed(call: Call, e: IOException): Unit = {
-                          Log.e(TAG, "xiaoliu ping  request all faild:")
-                        }
-                      })
-                    }
-                  })
+                  NetworkUtils.postRecordPing(encodePingValue);
                 }
               }
               else throw new Exception(getString(R.string.connection_test_error_status_code, code: Integer))
@@ -434,46 +403,12 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
     Log.d(TAG, "xiaoliu checkUpdate start:"+requestJson)
     if(requestJson!=null&&(!"".equals(requestJson))) {
       var encodeJson = AESOperator.getInstance().encrypt(requestJson)
-      NetUtils.getInstance().postDataAsynToNet(NetUtils.APP_UPDATE, encodeJson, new NetUtils.MyNetCall {
-        override def success(call: Call, response: Response): Unit = {
-          var body = response.body().string()
-          Log.d(TAG, "xiaoliu checkUpdate success:" + body)
-          if (body != null) {
-            var json = ToolUtils.parseToJson(body)
-            var code = json.getInt("code")
-            if (code == 200) {
-              var dataobj: JSONObject = new JSONObject(json.getString("data"))
-              var fileurl = dataobj.getString("fileUrl")
-              if(fileurl!=null){
-                handler.post(()=>showUpdaloadDialog(fileurl));
-              }
-            }
-          }
+      NetworkUtils.postCheckUpdate(encodeJson,new NetworkUtils.CheckUpdateNetCall {
+        override def needUpdate(fileUrl: String): Unit = {
+          handler.post(()=>showUpdaloadDialog(fileUrl));
         }
+        override def onException(exception: Exception): Unit = {
 
-        override def failed(call: Call, e: IOException): Unit = {
-          Log.e(TAG, "xiaoliu checkUpdate failed first request:")
-          NetUtils.getInstance().postDataAsynToNet(NetUtils.APP_UPDATE_OTHER, encodeJson, new NetUtils.MyNetCall {
-            override def success(call: Call, response: Response): Unit = {
-              var body = response.body().string()
-              Log.d(TAG, "xiaoliu checkUpdate success:" + body)
-              if (body != null) {
-                var json = ToolUtils.parseToJson(body)
-                var code = json.getInt("code")
-                if (code == 200) {
-                  var dataobj: JSONObject = new JSONObject(json.getString("data"))
-                  var fileurl = dataobj.getString("fileUrl")
-                  if(fileurl!=null){
-                    handler.post(()=>showUpdaloadDialog(fileurl));
-                  }
-                }
-              }
-            }
-
-            override def failed(call: Call, e: IOException): Unit = {
-              Log.e(TAG, "xiaoliu checkUpdate failed all:")
-            }
-          })
         }
       })
     }
@@ -657,48 +592,13 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
     var requestJson  = ToolUtils.getSyncRemainDataJson(app);
     if(requestJson!=null&&(!"".equals(requestJson))){
       var encodeJson = AESOperator.getInstance().encrypt(requestJson)
-      NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO,encodeJson,new NetUtils.MyNetCall {
-        override def success(call: Call, response: Response): Unit = {
-          var body =response.body().string()
-          Log.d(TAG, "xiaoliu syncRemainData success:"+body)
-          if(body!=null){
-            var json = ToolUtils.parseToJson(body)
-            var code =json.getInt("code")
-            if(code==200) {
-              var dataobj: JSONObject = new JSONObject(json.getString("data"))
-              var url = dataobj.getString("url")
-              var remainFlow = dataobj.getString("remain")
-              var remainTime = dataobj.getInt("effective_time")
-              SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,remainFlow)
-              SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,remainTime)
-              handler.post(()=>preferences.refreshExperience());
-            }
-          }
+      NetworkUtils.postSyncRemainData(app,encodeJson,new NetworkUtils.SyncRemainNetCall {
+        override def needUpdateUI(): Unit = {
+          handler.post(()=>preferences.refreshExperience());
         }
-        override def failed(call: Call, e: IOException): Unit = {
-          Log.e(TAG, "xiaoliu syncRemainData first faild:")
-          NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO_OTHER,encodeJson,new NetUtils.MyNetCall {
-            override def success(call: Call, response: Response): Unit = {
-              var body =response.body().string()
-              Log.d(TAG, "xiaoliu syncRemainData success:"+body)
-              if(body!=null){
-                var json = ToolUtils.parseToJson(body)
-                var code =json.getInt("code")
-                if(code==200) {
-                  var dataobj: JSONObject = new JSONObject(json.getString("data"))
-                  var url = dataobj.getString("url")
-                  var remainFlow = dataobj.getString("remain")
-                  var remainTime = dataobj.getInt("effective_time")
-                  SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,remainFlow)
-                  SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,remainTime)
-                  handler.post(()=>preferences.refreshExperience());
-                }
-              }
-            }
-            override def failed(call: Call, e: IOException): Unit = {
-              Log.e(TAG, "xiaoliu syncRemainData all faild:")
-            }
-          })
+
+        override def onException(exception: Exception): Unit = {
+
         }
       })
     }
