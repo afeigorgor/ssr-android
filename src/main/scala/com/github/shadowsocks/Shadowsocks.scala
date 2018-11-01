@@ -593,14 +593,61 @@ class Shadowsocks extends AppCompatActivity with ServiceBoundContext{
     if(requestJson!=null&&(!"".equals(requestJson))){
       var encodeJson = AESOperator.getInstance().encrypt(requestJson)
       NetworkUtils.postSyncRemainData(app,encodeJson,new NetworkUtils.SyncRemainNetCall {
-        override def needUpdateUI(): Unit = {
+        override def needUpdateUI(url:String): Unit = {
           handler.post(()=>preferences.refreshExperience());
+          checkUrlIsNeedUpdate(url);
         }
 
         override def onException(exception: Exception): Unit = {
 
         }
       })
+    }
+  }
+
+
+  private def checkUrlIsNeedUpdate(new_url:String): Unit ={
+    val url_group = SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,"none")
+    val src_url = SharedPrefsUtil.getValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,"")
+    if(!src_url.equals(new_url)){
+      var cardNumber:Long = ToolUtils.getCardNumber(app);
+      Log.d(TAG,"xiaoliu checkUrlIsNeedUpdate src url_grop:"+url_group+":src_url:"+src_url+":new_url:"+new_url);
+      var delete_profiles = app.profileManager.getAllProfilesByUrl(src_url) match {
+        case Some(profiles) =>
+          profiles
+        case _ => null
+      }
+      delete_profiles.foreach((profile: Profile) => {
+        Log.d(TAG,"xiaoliu delete_profiles:"+profile.id+":url:"+src_url+":profile_url:"+profile.url)
+        if(src_url == profile.url){
+          app.profileManager.delProfile(profile.id)
+        }
+      })
+
+      app.ssrsubManager.getAllSSRSubs.get.foreach(s=>{
+        if(s.url==src_url){
+          app.ssrsubManager.delSSRSub(s.id)
+        }
+      })
+
+      SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_SAVE_BETA_KEY,false)
+      SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL_GROUP,"none");
+      SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_URL,"");
+      SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_FLOW,"")
+      SharedPrefsUtil.putValue(app,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_BETA_REMAIN_DATE,0)
+
+      val first:Profile =  app.profileManager.getFirstProfile match {
+        case Some(p) =>
+          app.profileId(p.id)
+          p
+        case None => null
+
+      }
+      if(preferences!=null){
+        preferences.setProfile(first)
+        preferences.refreshSSRURL(new_url,cardNumber)
+
+      }
     }
   }
 

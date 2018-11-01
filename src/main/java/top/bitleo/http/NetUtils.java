@@ -27,6 +27,14 @@ import okhttp3.*;
 
 public class NetUtils {
 
+//    public static final String ACTIVE_USER ="https://fly.517.bz/experience/activateuser/";
+//    public static final String SELECT_INFO ="https://fly.517.bz/experience/selectinfo/";
+//    public static final String RECORD_PING ="https://fly.517.bz/experience/record_ping/";
+//    public static final String APP_UPDATE ="https://fly.517.bz/experience/mobileUserAppUp/";
+//    public static final String ACTIVE_USER_OTHER ="https://fly.517.bz/experience/activateuser/";
+//    public static final String SELECT_INFO_OTHER ="https://fly.517.bz/experience/selectinfo/";
+//    public static final String RECORD_PING_OTHER ="https://fly.517.bz/experience/record_ping/";
+//    public static final String APP_UPDATE_OTHER ="https://fly.517.bz/experience/mobileUserAppUp/";
     public static final String ACTIVE_USER ="https://s.vpnwifirouter.com/experience/activateuser/";
     public static final String SELECT_INFO ="https://s.vpnwifirouter.com/experience/selectinfo/";
     public static final String RECORD_PING ="https://s.vpnwifirouter.com/experience/record_ping/";

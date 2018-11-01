@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.Toast;
 import com.github.shadowsocks.AESOperator;
 import com.github.shadowsocks.SharedPrefsUtil;
@@ -18,6 +19,8 @@ import com.google.zxing.common.BitMatrix;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import static android.graphics.Color.BLACK;
 import static android.graphics.Color.WHITE;
@@ -43,10 +46,10 @@ public class ToolUtils {
         String cardInfoData =  SharedPrefsUtil.getValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_CARD_INFO_JSON,"");
         try {
             JSONObject object1=new JSONObject(commonData);
-            object.put("commonData",object1);
+            object.put(COMMON_DATA_KEY,object1);
             JSONObject object2 =new JSONObject(cardInfoData);
-            object.put("data",object2);
-        } catch (JSONException e) {
+            object.put(DATA_KEY,object2);
+        } catch (Exception e) {
             return null;
         }
         return object.toString();
@@ -57,8 +60,8 @@ public class ToolUtils {
         String commonData = SharedPrefsUtil.getValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_COMMON_DATA_JSON,"");
         try {
             JSONObject object1=new JSONObject(commonData);
-            object.put("commonData",object1);
-        } catch (JSONException e) {
+            object.put(COMMON_DATA_KEY,object1);
+        } catch (Exception e) {
             return null;
         }
         return object.toString();
@@ -96,10 +99,32 @@ public class ToolUtils {
             array.put(pingObj);
             dataobj.put("ping_list",array);
             dataobj.remove("activation_code");
-            postObject.put("data",dataobj);
+            postObject.put(DATA_KEY,dataobj);
             return postObject.toString();
 
-        } catch (JSONException e) {
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String getRecordJsonFromList(String requestJson,List<PingInfo> pingInfos){
+
+        try {
+            JSONObject postObject =new JSONObject(requestJson);
+            JSONObject dataobj = new JSONObject(postObject.getString("data"));
+            JSONArray array = new JSONArray();
+            for(PingInfo p:pingInfos){
+                JSONObject pingObj = new JSONObject();
+                pingObj.put("ping",p.elapsed);
+                pingObj.put("ip_or_damain",p.host);
+                array.put(pingObj);
+            }
+            dataobj.put("ping_list",array);
+            dataobj.remove("activation_code");
+            postObject.put(DATA_KEY,dataobj);
+            return postObject.toString();
+
+        } catch (Exception e) {
             return null;
         }
     }
@@ -233,7 +258,7 @@ public class ToolUtils {
             SharedPrefsUtil.putValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_COMMON_DATA_JSON,json);
             return json;
 
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -248,7 +273,7 @@ public class ToolUtils {
             String json  = object2.toString();
             SharedPrefsUtil.putValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_CARD_INFO_JSON,json);
             return json;
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -256,5 +281,31 @@ public class ToolUtils {
 
     public  static  void removeCardNumberAndCode(Context ctx){
         SharedPrefsUtil.putValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_CARD_INFO_JSON,"");
+    }
+
+    public  static Long getCardNumber(Context ctx){
+        String cardInfoData =  SharedPrefsUtil.getValue(ctx,ToolUtils.SHARE_KEY,ToolUtils.LOCAL_CARD_INFO_JSON,"");
+        try {
+            JSONObject object =new JSONObject(cardInfoData);
+            Long cardNumber =object.getLong("card_number");
+            return cardNumber;
+
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
+
+    public  static String  getUploadPingInfoJson(Context ctx,List<PingInfo> pingInfos){
+        String requestJson = ToolUtils.getSyncRemainDataJson(ctx);
+        String recordJson = getRecordJsonFromList(requestJson,pingInfos);
+        String encodePingValue = null;
+        try {
+            Log.d("ToolUtils","xiaoliu getUploadPingInfoJson:"+recordJson);
+            encodePingValue = AESOperator.getInstance().encrypt(recordJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return encodePingValue;
     }
 }

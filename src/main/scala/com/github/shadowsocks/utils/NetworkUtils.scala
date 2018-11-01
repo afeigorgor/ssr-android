@@ -19,6 +19,8 @@ object NetworkUtils {
 
   def postRecordPing(encodePingValue:String,isNeedRePost:Boolean = false): Unit ={
 
+    if(encodePingValue==null)
+      return;
     if(!isNeedRePost){
       NetUtils.getInstance().postDataAsynToNet(NetUtils.RECORD_PING,encodePingValue,new NetUtils.MyNetCall {
         override def success(call: Call, response: Response): Unit = {
@@ -86,6 +88,8 @@ object NetworkUtils {
   }
 
   def postCheckUpdate(encodeJson:String, callback:CheckUpdateNetCall,isNeedRePost:Boolean = false): Unit ={
+    if(encodeJson==null)
+      return;
     if(!isNeedRePost){
       NetUtils.getInstance().postDataAsynToNet(NetUtils.APP_UPDATE, encodeJson, new NetUtils.MyNetCall {
         override def success(call: Call, response: Response): Unit = {
@@ -172,12 +176,14 @@ object NetworkUtils {
     */
   trait SyncRemainNetCall {
     @throws[IOException]
-    def needUpdateUI(): Unit
+    def needUpdateUI(url:String): Unit
     def onException(exception: Exception): Unit
   }
 
 
   def postSyncRemainData(ctx:Context,encodeJson:String, callback:SyncRemainNetCall,isNeedRePost:Boolean = false): Unit = {
+    if(encodeJson==null)
+      return;
     if (!isNeedRePost) {
       NetUtils.getInstance().postDataAsynToNet(NetUtils.SELECT_INFO, encodeJson, new NetUtils.MyNetCall {
         override def success(call: Call, response: Response): Unit = {
@@ -195,7 +201,7 @@ object NetworkUtils {
                 SharedPrefsUtil.putValue(ctx, ToolUtils.SHARE_KEY, ToolUtils.LOCAL_BETA_REMAIN_FLOW, remainFlow)
                 SharedPrefsUtil.putValue(ctx, ToolUtils.SHARE_KEY, ToolUtils.LOCAL_BETA_REMAIN_DATE, remainTime)
                 if(callback!=null){
-                  callback.needUpdateUI();
+                  callback.needUpdateUI(url);
                 }
               } else if (code == 404 || code == 500) {
                 Log.e(TAG, "xiaoliu syncRemainData first faild:")
@@ -232,7 +238,7 @@ object NetworkUtils {
                 SharedPrefsUtil.putValue(ctx, ToolUtils.SHARE_KEY, ToolUtils.LOCAL_BETA_REMAIN_FLOW, remainFlow)
                 SharedPrefsUtil.putValue(ctx, ToolUtils.SHARE_KEY, ToolUtils.LOCAL_BETA_REMAIN_DATE, remainTime)
                 if(callback!=null){
-                  callback.needUpdateUI();
+                  callback.needUpdateUI(url);
                 }
               } else if (code == 404 || code == 500) {
                 Log.e(TAG, "xiaoliu syncRemainData all faild:")
@@ -263,7 +269,7 @@ object NetworkUtils {
 
 
   /**
-    * 自定义syncremain回调接口
+    * 自定义activituse回调接口
     */
   trait ActiveUserNetCall {
     @throws[IOException]
@@ -273,7 +279,8 @@ object NetworkUtils {
   }
 
   def postActiveUser(encodeString:String,callback:ActiveUserNetCall,isNeedRePost:Boolean = false): Unit ={
-
+    if(encodeString==null)
+      return;
     if(!isNeedRePost){
       NetUtils.getInstance().postDataAsynToNet(NetUtils.ACTIVE_USER,encodeString,new NetUtils.MyNetCall {
         override def success(call: Call, response: Response): Unit = {

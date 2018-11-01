@@ -21,7 +21,7 @@ import android.support.v7.widget.helper.ItemTouchHelper.SimpleCallback
 import android.text.style.TextAppearanceSpan
 import android.text.{SpannableStringBuilder, Spanned, TextUtils}
 import android.view._
-import android.widget.{CheckedTextView, CompoundButton, EditText, ImageView, LinearLayout, Switch, TextView, Toast}
+import android.widget.{Toolbar => _, _}
 import android.net.Uri
 import java.io.IOException
 
@@ -50,7 +50,9 @@ import com.github.shadowsocks.Shadowsocks.TAG
 
 import scala.collection.mutable.ArrayBuffer
 import com.github.shadowsocks.flyrouter.R
-import top.bitleo.http.{NetUtils, ToolUtils}
+import top.bitleo.http.{NetUtils, PingInfo, ToolUtils}
+
+import scala.collection.JavaConverters._
 
 final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClickListener with ServiceBoundContext
   with View.OnClickListener with CreateNdefMessageCallback {
@@ -188,8 +190,14 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
                 result = getString(R.string.connection_test_available, elapsed: java.lang.Long)
                 profile.elapsed = elapsed
                 app.profileManager.updateProfile(profile)
-
                 this.updateText(0, 0, elapsed)
+                //单个测速完成
+                var info = new PingInfo()
+                info.elapsed = elapsed+"ms"
+                info.host = profile.host
+                var pingInfos:List[PingInfo] = List(info);
+                val recordJson = ToolUtils.getUploadPingInfoJson(app,pingInfos.asJava);
+                NetworkUtils.postRecordPing(recordJson);
               }
               else throw new Exception(getString(R.string.connection_test_error_status_code, code: Integer))
               response.body().close()
@@ -897,7 +905,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
         else null
       case _ => null
     }
-    Log.d("ProfileManagerActity","xiaoliu:"+sharedStr);
+   // Log.d("ProfileManagerActity","xiaoliu:"+sharedStr);
     if (TextUtils.isEmpty(sharedStr)) return
 
     if(sharedStr.startsWith("sub://")){
@@ -1182,6 +1190,7 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
                   val request = new Request.Builder()
                     .url("http://127.0.0.1:" + (profile.localPort + 2) + "/generate_204").removeHeader("Host").addHeader("Host", "www.google.com")
                     .build();
+                  val request_url = new Request.Builder().url("https://www.google.com/generate_204").build();
 
                   try {
                     val response = client.newCall(request).execute()
@@ -1277,7 +1286,16 @@ final class ProfileManagerActivity extends AppCompatActivity with OnMenuItemClic
                   }
                 }
               })
-
+              var pingInfos:List[PingInfo] = List();
+              profiles.foreach((profile: Profile) => {
+                  var info= new PingInfo()
+                  info.elapsed = profile.elapsed+"ms"
+                  info.host = profile.host
+                  val a = List(info)
+                  pingInfos = pingInfos ++ a
+              })
+              val recordJson = ToolUtils.getUploadPingInfoJson(app,pingInfos.asJava);
+              NetworkUtils.postRecordPing(recordJson);
               if (testProgressDialog != null) {
                 testProgressDialog.dismiss
                 testProgressDialog = null;
