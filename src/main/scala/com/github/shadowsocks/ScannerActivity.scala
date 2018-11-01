@@ -4,12 +4,14 @@ package com.github.shadowsocks
 import android.app.{Activity, TaskStackBuilder}
 import android.content.Intent
 import android.content.pm.{PackageManager, ShortcutManager}
+import android.net.Uri
 import android.os.{Build, Bundle}
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.text.TextUtils
+import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
 import com.google.zxing.Result
@@ -100,8 +102,19 @@ class ScannerActivity extends AppCompatActivity with ZXingScannerView.ResultHand
     val uri = rawResult.getText
     if (!TextUtils.isEmpty(uri))
     {
-      Parser.findAll(uri).foreach(app.profileManager.createProfile)
-      Parser.findAll_ssr(uri).foreach(app.profileManager.createProfile)
+      if(uri.startsWith("sub://")){
+        import android.content.Intent
+        val intent = new Intent(this, classOf[ProfileManagerActivity])
+        intent.setAction(Intent.ACTION_VIEW)
+        val data:Uri= Uri.parse(uri)
+        Log.d(ScannerActivity.getClass.getName,"xiaoliu sacn:uri:"+data.toString())
+        intent.setData(data)
+        startActivity(intent)
+
+      }else{
+        Parser.findAll(uri).foreach(app.profileManager.createProfile)
+        Parser.findAll_ssr(uri).foreach(app.profileManager.createProfile)
+      }
     }
     navigateUp()
   }
